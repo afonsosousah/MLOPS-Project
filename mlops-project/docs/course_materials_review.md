@@ -4,6 +4,8 @@ Last updated: 2026-06-19
 
 This file records how the course materials inform the Green Taxi MLOps project plan.
 
+References to `week_01`, `week_02`, and similar paths below describe the original class-material source folders only. Project notebooks should use the flat top-level notebook layout defined in `docs/notebook_structure.md`.
+
 ## Assignment
 
 Source: `../MLOps_project.pdf`
@@ -238,4 +240,3 @@ Project implication:
 - Schema checks must account for year/month schema variation.
 - Data quality checks are central to the project, not incidental.
 - Data source links and selected months must be recorded in parameters or metadata.
-

@@ -33,7 +33,8 @@ Use these sources as the project contract:
 - Do not preselect final target, final feature set, outlier thresholds, drift thresholds, train/validation/test months, model family, or success criteria until the data profiling/EDA work has produced evidence.
 - Keep notebooks exploratory and explanatory. Production behavior belongs in Kedro pipelines, reusable Python modules, tests, and config.
 - Keep the project reproducible. Any result in the report must be regenerated from source code and a documented sample of data.
-- Do not commit large raw data, credentials, MLflow databases, local caches, generated notebook outputs, or private configuration.
+- Do not commit large raw data, credentials, MLflow databases, local caches, bulky transient debug output, or private configuration.
+- Keep final delivery notebook outputs visible after the notebooks have been rerun and reviewed. The course deliverable is easier to grade when plots, tables, metrics, and explanations are visible in the submitted notebooks.
 - Put credentials only in `conf/local/`, `.env`, or local environment variables, and keep them out of version control.
 
 ## Preferred Architecture
@@ -63,13 +64,12 @@ mlops-project/
     08_reporting/
   docs/
   notebooks/
-    week_01/
-    week_02/
-    week_03/
-    week_04/
-    week_05/
-    week_06/
-    week_07/
+    01_Data_Profiling_and_Quality.ipynb
+    02_Feature_Engineering_and_Feature_Store.ipynb
+    03_Experiment_Tracking_and_Modeling.ipynb
+    04_Model_Serving_and_Containers.ipynb
+    05_Monitoring_and_Drift.ipynb
+    06_Explainability_and_Report_Artifacts.ipynb
   src/
     green_taxi_mlops/
       pipeline_registry.py
@@ -123,7 +123,7 @@ Notebook names and headings should mirror the practical classes where applicable
 - Drift evaluation
 - Conclusions and production notes
 
-Notebook output should be stripped before commit unless the notebook is intentionally submitted with outputs for review. Important plots, tables, model metrics, SHAP summaries, and drift reports should be saved under `data/08_reporting/` or `docs/figures/` by reproducible code.
+Notebook output should remain visible for final delivery after a clean top-to-bottom run. Important plots, tables, model metrics, SHAP summaries, and drift reports should also be saved under `data/08_reporting/` or `docs/figures/` by reproducible code, so the visible outputs are not the only source of evidence.
 
 ## Data Guidance
 

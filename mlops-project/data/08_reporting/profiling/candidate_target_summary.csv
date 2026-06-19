@@ -1,0 +1,6 @@
+candidate_target,usable_rows,usable_pct,decision_status,notes
+trip_duration_minutes,1414985,99.81,deferred,Regression target from pickup/dropoff timestamps; not known before trip completion.
+fare_amount,1417684,100.0,deferred,Regression target from metered fare; post-trip field.
+total_amount,1417684,100.0,deferred,Regression target for total paid amount; includes post-trip components.
+long_trip_indicator,354343,24.994,deferred,Classification target candidate based on duration quantile; threshold is exploratory only.
+high_fare_indicator,343130,24.204,deferred,Classification target candidate based on fare quantile; threshold is exploratory only.

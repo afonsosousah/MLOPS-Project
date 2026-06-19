@@ -42,7 +42,8 @@ Acceptance:
 
 Outputs:
 
-- Download or ingestion logic for selected Green Taxi Parquet files and taxi zone lookup.
+- Local raw download of selected Green Taxi Parquet files and taxi zone lookup.
+- Reproducible ingestion logic for those raw files.
 - Data profiling notebook.
 - Schema summary and data quality findings.
 - Candidate target assessment.
@@ -51,6 +52,16 @@ Acceptance:
 
 - Source URLs, months, row counts, and schema differences are recorded.
 - Data-dependent decisions remain deferred until evidence exists.
+
+Current acquisition status:
+
+- Downloaded 2024-01 through 2025-12 Green Taxi monthly Parquet files under `data/01_raw/green_taxi/YYYY/`.
+- Downloaded currently listed 2026 Green Taxi monthly Parquet files, 2026-01 through 2026-04, under `data/01_raw/green_taxi/2026/`.
+- Downloaded `taxi_zone_lookup.csv`.
+- Later 2026 files are expected to become available monthly with TLC's normal publication delay.
+- Created and executed `notebooks/01_Data_Profiling_and_Quality.ipynb`.
+- Saved Notebook 1 profiling artifacts under `data/08_reporting/profiling/`.
+- Added reusable profiling helpers and focused tests under `src/green_taxi_mlops/` and `tests/`.
 
 ### Sprint 2: Data Quality and Feature Readiness
 
@@ -129,6 +140,7 @@ Acceptance:
 Outputs:
 
 - Six-page report.
+- Final notebooks rerun with visible reviewed outputs.
 - Package/version list.
 - Reproducibility instructions.
 - Zip/Git-ready project.
@@ -159,6 +171,12 @@ mlops-project/
     07_model_output/
     08_reporting/
   notebooks/
+    01_Data_Profiling_and_Quality.ipynb
+    02_Feature_Engineering_and_Feature_Store.ipynb
+    03_Experiment_Tracking_and_Modeling.ipynb
+    04_Model_Serving_and_Containers.ipynb
+    05_Monitoring_and_Drift.ipynb
+    06_Explainability_and_Report_Artifacts.ipynb
   src/
     green_taxi_mlops/
       __init__.py
@@ -210,4 +228,3 @@ Keep the final report concise:
 6. Production implementation, risks, mitigations, package versions.
 
 Do not write final report conclusions before the corresponding artifacts exist.
-

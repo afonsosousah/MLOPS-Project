@@ -1,0 +1,6 @@
+data/01_raw/**/*.tmp
+.venv/
+.pytest_cache/
+__pycache__/
+*.py[cod]
+.ipynb_checkpoints/
