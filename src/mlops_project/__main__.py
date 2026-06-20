@@ -1,4 +1,4 @@
-"""mlops_project file for ensuring the package is executable
+"""mlops-project file for ensuring the package is executable
 as `mlops-project` and `python -m mlops_project`
 """
 import sys

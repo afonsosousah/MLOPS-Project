@@ -83,6 +83,7 @@ Project implication:
 - Use Great Expectations where the suite is stable.
 - Keep exact expectations evidence-based after profiling Green Taxi records.
 - Feature store work can be implemented as Hopsworks if credentials are available, or documented as a local feature table/catalog alternative if not.
+- For Notebook 1, mirror the class data-unit-test workflow by defining a data contract, validating a monthly/batch-style dataset, parsing results into a tabular artifact, and keeping observability outputs visible in the notebook. Use lightweight reusable validation helpers first; add a full Great Expectations context later if the suite stabilizes and dependency overhead is justified.
 
 ## Practical Week 2: MLflow and Optuna
 

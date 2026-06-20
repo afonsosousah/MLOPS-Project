@@ -77,6 +77,12 @@ Acceptance:
 - Data quality failures halt or clearly flag bad input.
 - Expectations are justified by profiling evidence.
 
+Current status:
+
+- The first data unit tests are implemented as reusable validation helpers and a Kedro `data_unit_tests` pipeline.
+- Notebook 1 displays the validation results and saves `data_unit_test_results.csv` plus `data_unit_test_summary.csv` as reporting artifacts.
+- Exact cleaning thresholds remain deferred until the prediction target and feature set are selected.
+
 ### Sprint 3: Baseline Modeling and MLflow
 
 Outputs:

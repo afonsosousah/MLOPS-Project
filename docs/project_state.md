@@ -59,7 +59,7 @@ These must not be finalized until the Green Taxi data is downloaded and profiled
 
 ## Current Notebook Work
 
-Notebook 1 is being created as `notebooks/01_Data_Profiling_and_Quality.ipynb`.
+Notebook 1 exists as `notebooks/01_Data_Profiling_and_Quality.ipynb` and is being extended with evidence-based data unit tests.
 
 Intended sections:
 
@@ -68,6 +68,7 @@ Intended sections:
 - Loading the Data
 - Initial Data Checks
 - Data Validation
+- Data Unit Tests
 - Exploratory Analysis
 - Candidate Targets
 - Serving-Time Features
@@ -78,7 +79,9 @@ Implementation assumptions for Notebook 1:
 - Use the already downloaded Green Taxi parquet files under `data/01_raw/green_taxi/`.
 - Use `data/01_raw/metadata/taxi_zone_lookup.csv` only for location metadata checks, not for feature decisions yet.
 - Add reusable profiling helpers under `src/mlops_project/`.
+- Add reusable validation helpers and a Kedro `data_unit_tests` pipeline under `src/mlops_project/pipelines/data_unit_tests/`.
 - Save reproducible profiling artifacts under `data/08_reporting/profiling/`.
+- Save data unit test results under `data/08_reporting/profiling/data_unit_test_results.csv`.
 - Keep the final target, split months, model family, metric thresholds, outlier thresholds, serving schema, and drift strategy deferred.
 
 ## Current Files Created
@@ -100,12 +103,32 @@ Implementation assumptions for Notebook 1:
 - `uv.lock`
 - `notebooks/01_Data_Profiling_and_Quality.ipynb`
 - `src/mlops_project/__init__.py`
+- `src/mlops_project/data_validation.py`
 - `src/mlops_project/profiling.py`
+- `src/mlops_project/pipelines/data_unit_tests/`
+- `tests/test_data_validation.py`
 - `tests/test_profiling.py`
+
+## Current Data Unit Test Implementation
+
+The first formal data unit tests have been added to Notebook 1 and reusable code:
+
+- Required core columns exist for Green Taxi profiling.
+- Pickup and dropoff datetimes are present and parseable.
+- Trip duration is positive for valid candidate duration modeling rows.
+- Pickup and dropoff location IDs are present.
+- Distance and fare values are profiled for invalid-looking negative values.
+- Schema evolution is handled without requiring `cbd_congestion_fee` in pre-2025 files.
+
+These tests clearly distinguish enforceable checks from warnings or deferred policy decisions.
+
+The reusable implementation lives in `src/mlops_project/data_validation.py`.
+The Kedro pipeline lives in `src/mlops_project/pipelines/data_unit_tests/`.
+The pipeline output is `data/08_reporting/profiling/data_unit_test_results.csv`.
 
 ## Next Recommended Step
 
-Review Notebook 1 profiling findings and use them to define the feature engineering scope for:
+Review Notebook 1 profiling and validation findings to define the feature engineering scope for:
 
 - `notebooks/02_Feature_Engineering_and_Feature_Store.ipynb`
 

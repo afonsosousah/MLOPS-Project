@@ -78,6 +78,7 @@ Purpose:
 - Identify candidate target options without finalizing them prematurely.
 - Identify which columns are available at serving time versus known only after trip completion.
 - Build evidence-based data quality checks with Great Expectations or equivalent validation helpers.
+- Show the first reusable data unit test results generated from project validation helpers and save them as reporting artifacts.
 
 Do not finalize thresholds or model metrics in this notebook unless the data supports them and the rationale is documented.
 
