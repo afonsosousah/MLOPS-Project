@@ -4,13 +4,15 @@ Last updated: 2026-06-20
 
 Notebook organization should mirror the practical classes by topic and section flow, but not by class week or folder. This project uses a small flat set of final-delivery notebooks directly under `notebooks/`.
 
-Production code belongs in `src/mlops_project/`. Notebooks should call reusable code instead of becoming the only implementation. Kedro pipeline design belongs in code and project docs, not in a separate notebook.
+The current style reference is the hand-written `notebooks/01_data_profiling_and_validation.ipynb`. Future notebooks should be beginner-paced, visible, and close to the relevant practical class.
+
+Production code belongs in `src/mlops_project/`. Notebooks should call reusable code only after the concept is understandable in the notebook. Kedro pipeline design belongs in code and project docs, not in a separate notebook.
 
 ## Output Policy
 
 Keep notebook outputs visible for final delivery after a clean top-to-bottom run. The course deliverable is easier to review when plots, tables, validation results, MLflow summaries, SHAP figures, and drift reports are visible in the notebook files.
 
-Visible outputs do not replace reproducibility. Important artifacts should also be saved by code under `data/08_reporting/` or `docs/figures/`.
+Visible outputs do not replace reproducibility. Important artifacts should also be saved by code under `data/08_reporting/` or `docs/figures/` when that is useful and easy to understand.
 
 ## Naming Convention
 
@@ -18,15 +20,23 @@ Use exactly these six notebooks:
 
 ```text
 notebooks/
-  01_Data_Profiling_and_Quality.ipynb
-  02_Feature_Engineering_and_Feature_Store.ipynb
-  03_Experiment_Tracking_and_Modeling.ipynb
-  04_Model_Serving_and_Containers.ipynb
-  05_Monitoring_and_Drift.ipynb
-  06_Explainability_and_Report_Artifacts.ipynb
+  01_data_profiling_and_validation.ipynb
+  02_feature_engineering_and_feature_store.ipynb
+  03_experiment_tracking_and_modeling.ipynb
+  04_model_serving_and_containers.ipynb
+  05_monitoring_and_drift.ipynb
+  06_explainability_and_report_artifacts.ipynb
 ```
 
 Only create notebooks when there is work to do. Do not create empty notebooks just because they are listed here.
+
+## Simplicity Rules
+
+- Prefer explicit notebook cells over imported helper modules.
+- Use helper functions only when the same idea is repeated and the function makes the notebook easier to read.
+- Do not create a new `src/` module until the notebook has made the workflow clear.
+- Add only the class concept needed for the current notebook.
+- Do not add optional features, extra abstractions, or configurable frameworks unless the assignment or practical class requires them.
 
 ## Standard Notebook Sections
 
@@ -48,106 +58,112 @@ Use these headings where applicable:
 ## Explainability
 ## Batch Prediction
 ## Drift Evaluation
-## Conclusions
-## Production Notes
+## Conclusions and Production Notes
 ```
 
-Subsections should be used for concrete steps, for example:
+## Notebook 1: Data Profiling and Validation
 
-```markdown
-### Schema Overview
-### Missing Values
-### Invalid Trips
-### Candidate Targets
-### Candidate Serving Features
-### Metrics Logged to MLflow
-### Artifacts Saved
-```
+Path: `notebooks/01_data_profiling_and_validation.ipynb`
 
-## Notebook 1: Data Profiling and Quality
+Practical class material to inspect first:
 
-Path: `notebooks/01_Data_Profiling_and_Quality.ipynb`
+- `class_materials/Practical_Classes-20260618/week_01/week1.ipynb`
+- `class_materials/Practical_Classes-20260618/week_01/01_Data_Unit_Tests.ipynb`
 
 Purpose:
 
-- Record Green Taxi source URLs and file metadata.
-- Download or read a small selected sample of monthly Parquet files.
-- Inspect schema and column types.
-- Compare schemas across selected months.
-- Summarize row counts, missing values, invalid-looking records, and duplicated records.
-- Identify candidate target options without finalizing them prematurely.
-- Identify which columns are available at serving time versus known only after trip completion.
-- Build evidence-based data quality checks with Great Expectations or equivalent validation helpers.
-- Show the first reusable data unit test results generated from project validation helpers and save them as reporting artifacts.
-
-Do not finalize thresholds or model metrics in this notebook unless the data supports them and the rationale is documented.
+- Load the Green Taxi data.
+- Split reference and analysis datasets.
+- Profile the reference data.
+- Build Great Expectations checks based on what was observed.
+- Validate the analysis dataset.
+- Keep outputs visible so the validation process is understandable.
 
 ## Notebook 2: Feature Engineering and Feature Store
 
-Path: `notebooks/02_Feature_Engineering_and_Feature_Store.ipynb`
+Path: `notebooks/02_feature_engineering_and_feature_store.ipynb`
+
+Practical class material to inspect first:
+
+- `class_materials/Practical_Classes-20260618/week_01/01_Feature_Store_Feature_Group_Creation.ipynb`
+- `class_materials/Practical_Classes-20260618/week_01/02_Feature_Store_Feature_View.ipynb`
 
 Purpose:
 
-- Define candidate serving-time features.
-- Develop feature transformations in a way that can move into reusable pipeline code.
-- Document train-time-only columns that must not leak into serving.
-- Demonstrate Hopsworks feature store usage if credentials are available, or document a local Kedro catalog fallback.
-- Save feature metadata needed for training, serving, and report interpretation.
-
-Feature choices must remain tied to profiling evidence and the selected target.
+- Define simple candidate serving-time features.
+- Show transformations directly in the notebook first.
+- Explain which columns are not available at serving time.
+- Demonstrate Hopsworks if credentials are available, or document a local Kedro catalog fallback.
 
 ## Notebook 3: Experiment Tracking and Modeling
 
-Path: `notebooks/03_Experiment_Tracking_and_Modeling.ipynb`
+Path: `notebooks/03_experiment_tracking_and_modeling.ipynb`
+
+Practical class material to inspect first:
+
+- `class_materials/Practical_Classes-20260618/week_02/week2_problem.ipynb`
+- `class_materials/Practical_Classes-20260618/week_02/01_MLflow_intro.ipynb`
+- `class_materials/Practical_Classes-20260618/week_02/02_Optuna_MLFlow.ipynb`
 
 Purpose:
 
-- Define split strategy after target selection.
-- Train a baseline model before tuning.
-- Log parameters, metrics, artifacts, data version, and selected months to MLflow.
-- Compare candidate models.
-- Run Optuna only after the baseline and metric choice are justified.
-- Identify a model registry candidate when evidence supports it.
+- Start with a simple baseline model.
+- Log parameters, metrics, and artifacts to MLflow.
+- Compare models only after the baseline works.
+- Add Optuna only if the baseline and metric choice are clear.
 
-Model comparison should rely on reproducible code and logged artifacts, not notebook-only state.
+## Kedro Extraction: No Dedicated Notebook
+
+Practical class material to inspect first:
+
+- `class_materials/Practical_Classes-20260618/week_03/kedro_installation.pdf`
+- `class_materials/Practical_Classes-20260618/week_03/bank-example/`
+- `class_materials/Practical_Classes-20260618/week_04/bank-example/`
+
+Kedro pipelines should be created when a notebook workflow is stable enough to move into reusable code. Do not create separate Kedro design notebooks.
 
 ## Notebook 4: Model Serving and Containers
 
-Path: `notebooks/04_Model_Serving_and_Containers.ipynb`
+Path: `notebooks/04_model_serving_and_containers.ipynb`
+
+Practical class material to inspect first:
+
+- `class_materials/Practical_Classes-20260618/week_04/docker_recommendation/`
+- `class_materials/Practical_Classes-20260618/week_05/spotify_recommender/`
 
 Purpose:
 
-- Define the serving schema from serving-time features only.
-- Document FastAPI request and response behavior.
-- Include valid example payloads and expected response shape.
-- Capture health and readiness endpoint behavior.
-- Document Docker build/run commands and any container constraints.
-
-The serving schema must not include fields that are only known after trip completion.
+- Define a simple serving request using only serving-time features.
+- Show the FastAPI behavior and example payloads.
+- Document Docker build and run commands.
 
 ## Notebook 5: Monitoring and Drift
 
-Path: `notebooks/05_Monitoring_and_Drift.ipynb`
+Path: `notebooks/05_monitoring_and_drift.ipynb`
+
+Practical class material to inspect first:
+
+- `class_materials/Practical_Classes-20260618/week_06/00_Data_Drift.ipynb`
+- `class_materials/Practical_Classes-20260618/week_06/01_datadrift_PSI.ipynb`
+- `class_materials/Practical_Classes-20260618/week_06/04_evidently.ipynb`
 
 Purpose:
 
-- Define reference and current/batch periods after data splits are chosen.
-- Select PSI, JS divergence, Evidently, or NannyML based on the modeling task and available features.
-- Generate drift artifacts and visible interpretation.
-- Log drift outputs to MLflow when useful.
-- Distinguish natural observed drift from any artificial stress test.
-
-Do not label drift as production drift unless the reference and current periods are documented.
+- Define reference and analysis periods after splits are chosen.
+- Use one drift method first.
+- Add a richer report only if it helps explain the result.
+- Distinguish observed drift from artificial stress tests.
 
 ## Notebook 6: Explainability and Report Artifacts
 
-Path: `notebooks/06_Explainability_and_Report_Artifacts.ipynb`
+Path: `notebooks/06_explainability_and_report_artifacts.ipynb`
+
+Practical class material to inspect first:
+
+- `class_materials/Practical_Classes-20260618/week_07/05_Explainability.ipynb`
 
 Purpose:
 
-- Generate SHAP or permutation importance artifacts for the selected model.
-- Include local explanation examples only after realistic request examples are defined.
+- Generate simple feature importance or SHAP explanations for the selected model.
+- Include local explanations only after realistic examples are defined.
 - Save report-ready figures, metric tables, and package/version evidence.
-- Record limitations and production risk/mitigation evidence for the final report.
-
-Every report-ready conclusion should point to a reproducible artifact or visible notebook output.

@@ -6,6 +6,8 @@ Last updated: 2026-06-20
 
 Build a reproducible MLOps proof of concept using NYC TLC Green Taxi trip records. The implementation should demonstrate a real deployment-oriented workflow, not just a modeling notebook.
 
+The project should stay beginner-first: each notebook should teach one main MLOps topic at a pace similar to the practical classes before code is moved into reusable modules or Kedro pipelines.
+
 ## Success Criteria
 
 Course-level success criteria:
@@ -59,16 +61,15 @@ Current acquisition status:
 - Downloaded currently listed 2026 Green Taxi monthly Parquet files, 2026-01 through 2026-04, under `data/01_raw/green_taxi/2026/`.
 - Downloaded `taxi_zone_lookup.csv`.
 - Later 2026 files are expected to become available monthly with TLC's normal publication delay.
-- Created and executed `notebooks/01_Data_Profiling_and_Quality.ipynb`.
-- Saved Notebook 1 profiling artifacts under `data/08_reporting/profiling/`.
-- Added reusable profiling helpers and focused tests under `src/mlops_project/` and `tests/`.
+- Created `notebooks/01_data_profiling_and_validation.ipynb` by hand, based on the Week 1 practical class flow.
+- Notebook 1 is the style reference for future notebooks: visible steps first, minimal helper code, no hidden utility modules before the concept is clear.
 
 ### Sprint 2: Data Quality and Feature Readiness
 
 Outputs:
 
-- Great Expectations suite or equivalent validation helpers.
-- Kedro `data_unit_tests` pipeline.
+- Great Expectations suite or equivalent validation checks in Notebook 1.
+- Kedro `data_unit_tests` pipeline only after the notebook validation workflow is clear.
 - Initial feature engineering candidates.
 - Optional feature store proof of concept or documented local alternative.
 
@@ -79,8 +80,8 @@ Acceptance:
 
 Current status:
 
-- The first data unit tests are implemented as reusable validation helpers and a Kedro `data_unit_tests` pipeline.
-- Notebook 1 displays the validation results and saves `data_unit_test_results.csv` plus `data_unit_test_summary.csv` as reporting artifacts.
+- Notebook 1 has started the Great Expectations suite in the notebook itself.
+- The validation execution section still needs to be completed visibly before extracting code into reusable modules.
 - Exact cleaning thresholds remain deferred until the prediction target and feature set are selected.
 
 ### Sprint 3: Baseline Modeling and MLflow
@@ -177,12 +178,12 @@ MLOPS Project/
     07_model_output/
     08_reporting/
   notebooks/
-    01_Data_Profiling_and_Quality.ipynb
-    02_Feature_Engineering_and_Feature_Store.ipynb
-    03_Experiment_Tracking_and_Modeling.ipynb
-    04_Model_Serving_and_Containers.ipynb
-    05_Monitoring_and_Drift.ipynb
-    06_Explainability_and_Report_Artifacts.ipynb
+    01_data_profiling_and_validation.ipynb
+    02_feature_engineering_and_feature_store.ipynb
+    03_experiment_tracking_and_modeling.ipynb
+    04_model_serving_and_containers.ipynb
+    05_monitoring_and_drift.ipynb
+    06_explainability_and_report_artifacts.ipynb
   src/
     mlops_project/
       __init__.py
@@ -192,25 +193,32 @@ MLOPS Project/
   tests/
 ```
 
-## Candidate Pipelines
+## Pipeline Extraction Plan
 
-These are planned architecture components, not guaranteed implementation scope. Keep or remove them based on evidence and time.
+Pipelines are not the starting point. First make the workflow clear in notebooks, then extract the small stable parts needed for reproducibility.
+
+## Notebook to Practical Class Mapping
+
+| Notebook | Practical material to inspect first |
+|---|---|
+| `01_data_profiling_and_validation.ipynb` | Week 1 data profiling, data unit tests, and validation |
+| `02_feature_engineering_and_feature_store.ipynb` | Week 1 feature store and feature view notebooks |
+| `03_experiment_tracking_and_modeling.ipynb` | Week 2 MLflow and Optuna notebooks |
+| `04_model_serving_and_containers.ipynb` | Week 4/5 deployment, serving, and container examples |
+| `05_monitoring_and_drift.ipynb` | Week 6 drift and monitoring notebooks |
+| `06_explainability_and_report_artifacts.ipynb` | Week 7 explainability notebook and final report needs |
+
+Kedro code extraction should use Week 3/4 examples only after the notebook workflow is understandable.
 
 | Pipeline | Purpose | Data-dependent decisions |
 |---|---|---|
-| `ingestion` | Read/download selected Green Taxi Parquet files and taxi zones | Months, sample size, schema normalization |
-| `data_unit_tests` | Validate schema and quality | Exact expectations and thresholds |
-| `data_profiling` | Produce profiling artifacts | Which summaries matter |
-| `preprocessing_train` | Clean training data | Invalid trip filters |
-| `split_data` | Build train/validation/test sets | Target and split periods |
-| `feature_engineering` | Create reusable features | Feature list and serving availability |
-| `model_selection` | Compare candidate models | Model families and metrics |
-| `model_train` | Train final selected model | Final parameters |
-| `explainability` | Generate SHAP/importance artifacts | Explanation sample and feature subset |
-| `preprocessing_batch` | Prepare future/batch data | Batch period and schema |
-| `model_predict` | Score batch or API inputs | Output schema |
-| `data_drift` | Compare reference/current periods | Drift metric and thresholds |
-| `reporting` | Save report figures/tables | Final report story |
+| `data_unit_tests` | Move stable Notebook 1 validation checks into a reproducible pipeline | Exact expectations and thresholds |
+| `feature_engineering` | Move simple, repeated Notebook 2 transformations into reusable code | Feature list and serving availability |
+| `model_train` | Move the chosen baseline/model workflow after Notebook 3 proves it | Target, split periods, and metrics |
+| `model_predict` | Score batch or API inputs after serving schema is clear | Output schema |
+| `data_drift` | Compare reference/current periods after Notebook 5 defines them | Drift method and thresholds |
+
+Do not add other pipelines unless a notebook has a repeated, stable workflow that needs orchestration.
 
 ## Known Risks
 

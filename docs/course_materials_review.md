@@ -4,7 +4,11 @@ Last updated: 2026-06-20
 
 This file records how the course materials inform the Green Taxi MLOps project plan.
 
-References to `week_01`, `week_02`, and similar paths below describe the original class-material source folders only. Project notebooks should use the flat top-level notebook layout defined in `docs/notebook_structure.md`.
+References to `week_01`, `week_02`, and similar paths below describe the original class-material source folders only. Project notebooks should use the flat lowercase layout defined in `docs/notebook_structure.md`.
+
+Future notebook work must inspect the matching practical class week first. Use the class material for topic order and expected concepts, but adapt it to Green Taxi and avoid copying full examples blindly.
+
+The old generated first notebook under `C:\Users\Asus\Desktop\MLOPS Project_old` is a cautionary reference for over-abstraction. It depended on hidden helper modules; future notebooks should keep beginner-visible steps in the notebook before extracting helpers.
 
 ## Assignment
 
@@ -83,7 +87,8 @@ Project implication:
 - Use Great Expectations where the suite is stable.
 - Keep exact expectations evidence-based after profiling Green Taxi records.
 - Feature store work can be implemented as Hopsworks if credentials are available, or documented as a local feature table/catalog alternative if not.
-- For Notebook 1, mirror the class data-unit-test workflow by defining a data contract, validating a monthly/batch-style dataset, parsing results into a tabular artifact, and keeping observability outputs visible in the notebook. Use lightweight reusable validation helpers first; add a full Great Expectations context later if the suite stabilizes and dependency overhead is justified.
+- For Notebook 1, mirror the class data-unit-test workflow by loading data, splitting reference/analysis data, profiling, building expectations, validating data, and keeping observability outputs visible in the notebook.
+- For Notebook 2, use the feature store/view material only after Notebook 1 findings clarify which features are worth carrying forward.
 
 ## Practical Week 2: MLflow and Optuna
 
@@ -109,6 +114,7 @@ Project implication:
 - Build a baseline before Optuna.
 - Log data version, selected months, target definition, parameters, metrics, model artifact, and report artifacts.
 - Use MLflow registry only after model comparison is meaningful.
+- For Notebook 3, start with the simpler `week2_problem.ipynb` flow before adding autologging, Optuna, or registry operations.
 
 ## Practical Week 3 and Week 4: Kedro and Deployment Requirements
 
@@ -148,8 +154,8 @@ Observed pipeline names in the bank example:
 
 Project implication:
 
-- Mirror this organization but use Green Taxi specific package and pipeline names.
-- Put data artifacts in the Kedro catalog.
+- Move notebook logic into Green Taxi specific Kedro pipelines only after the notebook workflow is clear.
+- Put data artifacts in the Kedro catalog when they are reused by a pipeline.
 - Keep parameter choices in YAML rather than hard-coded notebooks.
 - Include tests near the relevant pipeline behavior.
 

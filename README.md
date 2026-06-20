@@ -90,10 +90,8 @@ And if you want to run an IPython session:
 kedro ipython
 ```
 
-### How to ignore notebook output cells in `git`
-To automatically strip out all output cell contents before committing to `git`, you can use tools like [`nbstripout`](https://github.com/kynan/nbstripout). For example, you can add a hook in `.git/config` with `nbstripout --install`. This will run `nbstripout` before anything is committed to `git`.
-
-> *Note:* Your output cells will be retained locally.
+### Notebook outputs
+For this project, keep final notebook outputs visible after a clean rerun. The submitted notebooks should show the relevant tables, plots, validation results, metrics, and explanations for grading.
 
 ## Package your Kedro project
 

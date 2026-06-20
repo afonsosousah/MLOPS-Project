@@ -27,6 +27,7 @@ Use these sources as the project contract:
 - Green taxi data dictionary: https://www.nyc.gov/assets/tlc/downloads/pdf/data_dictionary_trip_records_green.pdf
 - TLC trip records user guide: https://www.nyc.gov/assets/tlc/downloads/pdf/trip_record_user_guide.pdf
 - Parquet guide: https://www.nyc.gov/assets/tlc/downloads/pdf/working_parquet_format.pdf
+- Karpathy-style CLAUDE.md simplicity guidance: https://github.com/multica-ai/andrej-karpathy-skills/blob/main/CLAUDE.md
 
 ## Non-Negotiable Constraints
 
@@ -37,6 +38,34 @@ Use these sources as the project contract:
 - Do not commit large raw data, credentials, MLflow databases, local caches, bulky transient debug output, or private configuration.
 - Keep final delivery notebook outputs visible after the notebooks have been rerun and reviewed. The course deliverable is easier to grade when plots, tables, metrics, and explanations are visible in the submitted notebooks.
 - Put credentials only in `conf/local/`, `.env`, or local environment variables, and keep them out of version control.
+
+## Beginner-First MLOps Rules
+
+The target reader is a student learning MLOps for the first time. Optimize notebooks for understanding before reuse.
+
+- Prefer direct, readable notebook cells over hidden helper modules.
+- Avoid helper functions unless they make a repeated step clearer.
+- Do not create reusable modules before the notebook concept is understandable in plain cells.
+- Keep each notebook close to the corresponding practical class flow.
+- Adapt the practical class material to Green Taxi; do not copy full examples blindly.
+- Introduce Kedro pipelines only after the equivalent notebook workflow is clear.
+- Keep markdown explanations short and tied to the next code cell.
+- If a step feels advanced, add one visible example before abstracting it.
+
+## Karpathy/CLAUDE.md Simplicity Guardrails
+
+Use the supplied CLAUDE.md guidance as a simplicity check before changing code, notebooks, or docs.
+
+- State assumptions before implementing.
+- If multiple interpretations exist, surface them instead of silently choosing.
+- Choose the minimum code that solves the current task.
+- Add no speculative flexibility, configurability, or features.
+- Do not abstract single-use code.
+- Touch only files required by the request.
+- Do not refactor adjacent code just because it could be cleaner.
+- Remove only unused imports, variables, or functions created by the current change.
+- Define a verifiable goal for every non-trivial change, then verify it.
+- If the change starts looking large, simplify before continuing.
 
 ## Preferred Architecture
 
@@ -65,12 +94,12 @@ MLOPS Project/
     08_reporting/
   docs/
   notebooks/
-    01_Data_Profiling_and_Quality.ipynb
-    02_Feature_Engineering_and_Feature_Store.ipynb
-    03_Experiment_Tracking_and_Modeling.ipynb
-    04_Model_Serving_and_Containers.ipynb
-    05_Monitoring_and_Drift.ipynb
-    06_Explainability_and_Report_Artifacts.ipynb
+    01_data_profiling_and_validation.ipynb
+    02_feature_engineering_and_feature_store.ipynb
+    03_experiment_tracking_and_modeling.ipynb
+    04_model_serving_and_containers.ipynb
+    05_monitoring_and_drift.ipynb
+    06_explainability_and_report_artifacts.ipynb
   src/
     mlops_project/
       pipeline_registry.py
@@ -82,9 +111,9 @@ Use the generated Kedro package name `mlops_project`.
 
 ## Pipeline Guidance
 
-The assignment expects separated pipeline orchestration. Use named Kedro pipelines that can run independently and in sequence.
+The assignment expects separated pipeline orchestration, but pipelines should come after the notebook workflow is understandable. Do not create a pipeline just to satisfy a checklist.
 
-Recommended initial pipeline names:
+Possible pipeline names, only when the corresponding notebook section is stable:
 
 - `ingestion`
 - `data_unit_tests`
@@ -125,6 +154,18 @@ Notebook names and headings should mirror the practical classes where applicable
 - Conclusions and production notes
 
 Notebook output should remain visible for final delivery after a clean top-to-bottom run. Important plots, tables, model metrics, SHAP summaries, and drift reports should also be saved under `data/08_reporting/` or `docs/figures/` by reproducible code, so the visible outputs are not the only source of evidence.
+
+Before creating or extending a notebook, inspect the matching practical class week:
+
+- Notebook 1: Week 1 data profiling, data unit tests, and validation.
+- Notebook 2: Week 1 feature store and feature view material.
+- Notebook 3: Week 2 MLflow and Optuna material.
+- Kedro pipeline extraction: Week 3 and Week 4 Kedro examples.
+- Notebook 4: Week 4 and Week 5 serving/container material.
+- Notebook 5: Week 6 monitoring and drift material.
+- Notebook 6: Week 7 explainability plus final report needs.
+
+Use the practical class as a guide for sequence and concepts, not as code to copy wholesale.
 
 ## Data Guidance
 
