@@ -112,6 +112,14 @@ Purpose:
 - Compare models only after the baseline works.
 - Add Optuna only if the baseline and metric choice are clear.
 
+Current structure:
+
+- Follow the Week 2 heading flow directly: load data, import MLflow, start an experiment, choose three models, log metrics/artifacts, build a run summary dataframe, tune with Optuna, and log the best model.
+- Use `data/02_intermediate/ref_data.parquet` from Notebook 2.
+- Define `is_tipped` as the classification target.
+- Compare dummy, logistic regression, and random forest models before Optuna.
+- Keep local MLflow output under `mlruns/`, which is ignored by git.
+
 ## Kedro Extraction: No Dedicated Notebook
 
 Practical class material to inspect first:
