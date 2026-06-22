@@ -1,0 +1,22 @@
+{
+  "data": {
+    "asset": {
+      "id": "c6c03091-18aa-4773-a562-0b188a468bc3",
+      "name": "green_taxi_analysis"
+    },
+    "batch_definition": {
+      "id": "21462faa-f232-474b-9751-e53b14420c8d",
+      "name": "batch_definition_analysis"
+    },
+    "datasource": {
+      "id": "e94885e9-ab2b-43ee-890a-91c4e60166cc",
+      "name": "green_taxi_data_source"
+    }
+  },
+  "id": "49e40870-94d0-4358-a39f-d79c55c8397f",
+  "name": "green_taxi_pipeline_validation",
+  "suite": {
+    "id": "984fafc3-1e34-4e99-ab70-9efeb37874c1",
+    "name": "green_taxi_quality_v1"
+  }
+}

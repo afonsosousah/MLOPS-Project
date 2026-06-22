@@ -2172,6 +2172,7 @@ wheels = [
 name = "mlops-project"
 source = { editable = "." }
 dependencies = [
+    { name = "altair" },
     { name = "great-expectations" },
     { name = "ipython" },
     { name = "jupyterlab" },
@@ -2207,6 +2208,7 @@ docs = [
 
 [package.metadata]
 requires-dist = [
+    { name = "altair", specifier = ">=6.2.1" },
     { name = "docutils", marker = "extra == 'docs'", specifier = "<0.21" },
     { name = "great-expectations", specifier = ">=1.18.1" },
     { name = "ipykernel", marker = "extra == 'docs'", specifier = ">=5.3,<7.0" },
