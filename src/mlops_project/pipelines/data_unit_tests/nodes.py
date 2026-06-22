@@ -1,5 +1,5 @@
 import logging
-from typing import Dict
+from datetime import datetime
 
 import pandas as pd
 import great_expectations as gx
@@ -30,7 +30,8 @@ def _parse_results(results) -> pd.DataFrame:
 
 def unit_test(ingested_data: pd.DataFrame) -> pd.DataFrame:
     """
-    Run GX unit tests on the ingested Green Taxi data.
+    Run GX unit tests on ingested Green Taxi data.
+    Expectations are derived from the profiling in notebook 01_data_profiling_and_validation.
     Halts the pipeline if any expectation fails.
 
     Args:
@@ -39,62 +40,72 @@ def unit_test(ingested_data: pd.DataFrame) -> pd.DataFrame:
     Returns:
         reporting_tests: DataFrame with per-expectation validation results.
     """
-    logger.info("Running data unit tests...")
+    logger.info("Starting data unit tests...")
 
     context = gx.get_context(mode="ephemeral")
-    ds = context.data_sources.add_pandas("unit_test_source")
-    asset = ds.add_dataframe_asset("unit_test_asset")
-    batch_def = asset.add_batch_definition_whole_dataframe("batch")
+    data_source = context.data_sources.add_pandas("kedro_data_source")
+    data_asset = data_source.add_dataframe_asset("kedro_data_asset")
+    batch_def = data_asset.add_batch_definition_whole_dataframe("kedro_batch")
 
-    suite = gx.ExpectationSuite(name="green_taxi_unit_tests")
+    suite = gx.ExpectationSuite(name="unit_data_tests")
 
-    # Schema checks
-    suite.add_expectation(gxe.ExpectColumnValuesToBeOfType(column="trip_distance", type_="float64"))
-    suite.add_expectation(gxe.ExpectColumnValuesToBeOfType(column="fare_amount", type_="float64"))
-    suite.add_expectation(gxe.ExpectColumnValuesToBeOfType(column="PULocationID", type_="int32"))
-    suite.add_expectation(gxe.ExpectColumnValuesToBeOfType(column="DOLocationID", type_="int32"))
+    # Range expectations (from notebook 01 profiling)
+    range_rules = {
+        "trip_distance":          (0, 100),
+        "fare_amount":            (0, 500),
+        "extra":                  (0, 50),
+        "mta_tax":                (0, 5),
+        "tip_amount":             (0, 200),
+        "tolls_amount":           (0, 108),
+        "improvement_surcharge":  (0, 5),
+        "congestion_surcharge":   (0, 20),
+        "total_amount":           (0, 600),
+        "passenger_count":        (0, 9),
+        "lpep_pickup_datetime":   (datetime(2024, 1, 1), datetime(2026, 12, 31, 23, 59, 59)),
+        "lpep_dropoff_datetime":  (datetime(2024, 1, 1), datetime(2026, 12, 31, 23, 59, 59)),
+    }
+    for column, (min_value, max_value) in range_rules.items():
+        if column in ingested_data.columns:
+            suite.add_expectation(
+                gxe.ExpectColumnValuesToBeBetween(
+                    column=column, min_value=min_value, max_value=max_value
+                )
+            )
 
-    # Value range checks
-    suite.add_expectation(
-        gxe.ExpectColumnValuesToBeBetween(column="trip_distance", min_value=0, max_value=500)
-    )
-    suite.add_expectation(
-        gxe.ExpectColumnValuesToBeBetween(column="fare_amount", min_value=-10, max_value=1000)
-    )
-    suite.add_expectation(
-        gxe.ExpectColumnValuesToBeBetween(column="passenger_count", min_value=0, max_value=9, mostly=0.99)
-    )
+    # Not null
+    for column in ["lpep_pickup_datetime", "lpep_dropoff_datetime", "PULocationID", "DOLocationID"]:
+        if column in ingested_data.columns:
+            suite.add_expectation(gxe.ExpectColumnValuesToNotBeNull(column=column))
 
-    # Not null checks
-    suite.add_expectation(gxe.ExpectColumnValuesToNotBeNull(column="lpep_pickup_datetime"))
-    suite.add_expectation(gxe.ExpectColumnValuesToNotBeNull(column="PULocationID"))
-    suite.add_expectation(gxe.ExpectColumnValuesToNotBeNull(column="DOLocationID"))
-
-    # Categorical checks
-    suite.add_expectation(
-        gxe.ExpectColumnValuesToBeInSet(
-            column="payment_type", value_set=[1.0, 2.0, 3.0, 4.0, 5.0], mostly=0.99
+    # Categorical sets
+    if "RatecodeID" in ingested_data.columns:
+        suite.add_expectation(
+            gxe.ExpectColumnValuesToBeInSet(
+                column="RatecodeID", value_set=[1, 2, 3, 4, 5, 6, 99], mostly=0.99
+            )
         )
-    )
+    if "payment_type" in ingested_data.columns:
+        suite.add_expectation(
+            gxe.ExpectColumnValuesToBeInSet(
+                column="payment_type", value_set=[1.0, 2.0, 3.0, 4.0, 5.0], mostly=0.99
+            )
+        )
 
     context.suites.add(suite)
 
-    validation_def = gx.ValidationDefinition(
-        name="green_taxi_unit_validation",
-        data=batch_def,
-        suite=suite,
+    validation_definition = gx.ValidationDefinition(
+        name="kedro_validation", data=batch_def, suite=suite
     )
-    context.validation_definitions.add(validation_def)
+    context.validation_definitions.add(validation_definition)
 
-    results = validation_def.run(batch_parameters={"dataframe": ingested_data})
+    results = validation_definition.run(batch_parameters={"dataframe": ingested_data})
 
     if not results.success:
+        logger.error("Data validation FAILED:")
         for r in results.results:
             if not r.success:
-                logger.error("Failed: %s on column '%s'",
-                             r.expectation_config.type,
-                             r.expectation_config.kwargs.get("column", ""))
-        raise ValueError("Data unit tests failed. Pipeline halted.")
+                logger.error("  Failed: %s", r.expectation_config.type)
+        raise ValueError("Pipeline halted due to data validation failure.")
 
     logger.info("All data unit tests passed.")
     return _parse_results(results)
