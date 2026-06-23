@@ -1,6 +1,6 @@
 # Project State
 
-Last updated: 2026-06-23
+Last updated: 2026-06-20
 
 ## Scope
 
@@ -40,7 +40,6 @@ See `docs/course_materials_review.md` for the mapping from course materials to p
 - Notebook output policy: keep final reviewed outputs visible for delivery.
 - Simplicity rule: write notebook steps directly first; extract reusable modules or pipelines only after the workflow is clear.
 - Practical class rule: inspect the matching class week before adding a notebook or section, then adapt only what is needed.
-- Notebook writing style: concise markdown, natural use of "we", direct formal wording for factual sections, and findings placed near the profiling or validation output that supports them.
 
 ## Planned Notebooks
 
@@ -55,19 +54,15 @@ See `docs/course_materials_review.md` for the mapping from course materials to p
 
 Notebook 1 exists as `notebooks/01_data_profiling_and_validation.ipynb`.
 
-It follows the Week 1 practical class direction:
+It currently follows the Week 1 practical class direction:
 
 - Load data and imports.
-- Define simple constants and paths.
-- Read Green Taxi monthly Parquet data with a visible `source_month`.
-- Print compact loading diagnostics and split reference/analysis datasets by month.
-- Generate and save a full profiling report as the main place for data-quality findings.
-- Do not keep a separate initial-checks section when the same content is covered by profiling.
-- Build a starter Great Expectations suite.
-- Validate the later analysis months and summarize results visibly.
-- Leave target, feature, cleaning-threshold, modeling-split, and drift-threshold decisions deferred.
-- Use a single `#` notebook title and numbered `##` sections.
-- Use a first-cell `Sections` index and concise section descriptions.
+- Define simple constants.
+- Read Green Taxi Parquet data.
+- Split reference and analysis datasets.
+- Generate a profiling report.
+- Start a Great Expectations suite.
+- Leave validation and feature-store follow-up visible as next steps.
 
 Current Notebook 1 intentionally keeps the work mostly visible in notebook cells. It uses small local helper functions only where they make the Great Expectations workflow easier to read; future work should avoid adding more helpers unless they clearly improve readability.
 
@@ -105,8 +100,6 @@ Notebook 3 has been started as `notebooks/03_experiment_tracking_and_modeling.ip
 - `docs/course_materials_review.md`
 - `docs/notebook_structure.md`
 - `notebooks/01_data_profiling_and_validation.ipynb`
-- `notebooks/02_data_preprocessing.ipynb`
-- `notebooks/03_experiment_tracking_and_modeling.ipynb`
 - `src/mlops_project/`
 - `tests/`
 
@@ -119,15 +112,20 @@ These remain deferred until the notebooks provide evidence:
 - Train, validation, test, and drift periods.
 - Exact cleaning thresholds.
 - Serving-time feature set.
-- Final production model family.
-- Final hyperparameter search space beyond the small Notebook 3 demonstration.
+- Baseline model and model family.
+- Hyperparameter search space.
 - Drift method and alert thresholds.
 - Which artifacts are needed for the final report.
 
 ## Next Recommended Step
 
-After Notebook 1 is rerun and reviewed, start `notebooks/02_feature_engineering_and_feature_store.ipynb` by first reviewing the Week 1 feature store practical notebooks. Use Notebook 1 findings only as evidence for candidate checks and feature ideas, not as final modeling decisions.
-Run Notebook 2 top-to-bottom so `data/02_intermediate/ref_data.parquet` exists, then run Notebook 3 to produce visible MLflow/modeling evidence. After Notebook 3 is reviewed, decide whether the stable training workflow should be extracted into a Kedro `model_train` pipeline.
+Finish Notebook 1 at the same beginner pace:
+
+- Complete the Great Expectations validation step.
+- Show validation results visibly in the notebook.
+- Add a short conclusion listing what was learned and what remains deferred.
+
+After Notebook 1 is understandable and complete, start `notebooks/02_feature_engineering_and_feature_store.ipynb` by first reviewing the Week 1 feature store practical notebooks.
 
 ## Update Protocol
 

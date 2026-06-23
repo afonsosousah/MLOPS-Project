@@ -28,7 +28,7 @@
       },
       "meta": {},
       "severity": "critical",
-      "type": "expect_table_columns_to_match_set"
+      "type": "expect_column_values_to_be_between"
     },
     {
       "id": "8faa3012-33d7-4b45-af9d-819304aa6aaa",
@@ -207,7 +207,7 @@
       "id": "2e6868c4-d6dc-4839-8791-56547b9394db",
       "kwargs": {
         "column": "payment_type",
-        "mostly": 0.9,
+        "mostly": 0.99,
         "value_set": [
           1,
           2,
