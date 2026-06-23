@@ -1,6 +1,6 @@
 # Project Plan
 
-Last updated: 2026-06-20
+Last updated: 2026-06-23
 
 ## Goal
 
@@ -63,6 +63,9 @@ Current acquisition status:
 - Later 2026 files are expected to become available monthly with TLC's normal publication delay.
 - Created `notebooks/01_data_profiling_and_validation.ipynb` by hand, based on the Week 1 practical class flow.
 - Notebook 1 is the style reference for future notebooks: visible steps first, minimal helper code, no hidden utility modules before the concept is clear.
+- Notebook markdown should stay concise and evidence-led. Use simple printed diagnostics instead of verbose display-only DataFrame construction when that keeps notebook code clearer.
+- Notebook 1 uses 2024-01 through 2025-12 as a reference period and 2026-01 through 2026-04 as an analysis period for data validation only.
+- Notebook 1 saves a full YData Profiling report to `data/08_reporting/green_taxi_reference_profile.html`.
 
 ### Sprint 2: Data Quality and Feature Readiness
 
@@ -80,8 +83,9 @@ Acceptance:
 
 Current status:
 
-- Notebook 1 has started the Great Expectations suite in the notebook itself.
-- The validation execution section still needs to be completed visibly before extracting code into reusable modules.
+- Notebook 1 keeps the Great Expectations suite in the notebook itself.
+- The validation execution section summarizes analysis-period results visibly.
+- The current suite is a starter notebook validation suite, not a final production contract.
 - Exact cleaning thresholds remain deferred until the prediction target and feature set are selected.
 
 ### Sprint 3: Baseline Modeling and MLflow

@@ -1,6 +1,6 @@
 # Notebook Structure
 
-Last updated: 2026-06-20
+Last updated: 2026-06-23
 
 Notebook organization should mirror the practical classes by topic and section flow, but not by class week or folder. This project uses a small flat set of final-delivery notebooks directly under `notebooks/`.
 
@@ -37,6 +37,15 @@ Only create notebooks when there is work to do. Do not create empty notebooks ju
 - Do not create a new `src/` module until the notebook has made the workflow clear.
 - Add only the class concept needed for the current notebook.
 - Do not add optional features, extra abstractions, or configurable frameworks unless the assignment or practical class requires them.
+- Do not leave code or markdown cells ending with an empty line.
+- Keep section descriptions concise and human, usually one short paragraph or a few bullets.
+- Use "we" only where it reads naturally; do not force it into every description.
+- Skip section descriptions when the heading and following code are already clear.
+- Use a more direct and formal tone for problem framing, dataset description, and other factual project sections.
+- Put specific findings near the relevant code output, then summarize the main findings again in the conclusion.
+- Prefer simple prints for compact diagnostics when building a display-only DataFrame would make the code harder to read.
+- Avoid a separate "initial checks" section when profiling already covers the same findings.
+- Title-cell indexes should be titled `Sections`; do not add title-cell metadata unless it is useful for that notebook.
 
 ## Standard Notebook Sections
 
@@ -45,20 +54,20 @@ Use these headings where applicable:
 ```markdown
 # <Notebook Title>
 
-## Business Problem
-## Dataset Description
-## Loading the Data
-## Initial Data Checks
-## Data Validation
-## Exploratory Analysis
-## Feature Engineering
-## Experiment Setup
-## Model Training
-## Model Evaluation
-## Explainability
-## Batch Prediction
-## Drift Evaluation
-## Conclusions and Production Notes
+## 0. Imports and Constants
+## 1. Business Problem
+## 2. Dataset Description
+## 3. Loading the Data
+## 4. Data Validation
+## 5. Exploratory Analysis
+## 6. Feature Engineering
+## 7. Experiment Setup
+## 8. Model Training
+## 9. Model Evaluation
+## 10. Explainability
+## 11. Batch Prediction
+## 12. Drift Evaluation
+## 13. Conclusions and Production Notes
 ```
 
 ## Notebook 1: Data Profiling and Validation
@@ -73,11 +82,17 @@ Practical class material to inspect first:
 Purpose:
 
 - Load the Green Taxi data.
-- Split reference and analysis datasets.
-- Profile the reference data.
-- Build Great Expectations checks based on what was observed.
-- Validate the analysis dataset.
+- Add visible source-month metadata and summarize row counts/schema variants.
+- Split reference and analysis datasets by time for validation only.
+- Profile the full reference data and save the report artifact.
+- Keep the profiling section as the main place for detailed data-quality findings.
+- Build starter Great Expectations checks based on observed data and official TLC code sets.
+- Validate the analysis dataset and show a readable validation summary.
 - Keep outputs visible so the validation process is understandable.
+- End with conclusions and deferred decisions instead of selecting the final target, model split, feature set, or cleaning thresholds.
+- Use a single `#` notebook title, numbered `##` sections, and smaller headings for subsections when needed.
+- Include a small `Sections` index in the first markdown cell under the notebook title.
+- Notebook 1 uses the agreed concise markdown style: short descriptions only where useful, natural "we" language, direct formal wording for factual sections, and findings near the profiling/validation outputs that support them.
 
 ## Notebook 2: Feature Engineering and Feature Store
 

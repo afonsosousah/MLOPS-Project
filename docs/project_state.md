@@ -1,6 +1,6 @@
 # Project State
 
-Last updated: 2026-06-20
+Last updated: 2026-06-23
 
 ## Scope
 
@@ -40,6 +40,7 @@ See `docs/course_materials_review.md` for the mapping from course materials to p
 - Notebook output policy: keep final reviewed outputs visible for delivery.
 - Simplicity rule: write notebook steps directly first; extract reusable modules or pipelines only after the workflow is clear.
 - Practical class rule: inspect the matching class week before adding a notebook or section, then adapt only what is needed.
+- Notebook writing style: concise markdown, natural use of "we", direct formal wording for factual sections, and findings placed near the profiling or validation output that supports them.
 
 ## Planned Notebooks
 
@@ -54,17 +55,30 @@ See `docs/course_materials_review.md` for the mapping from course materials to p
 
 Notebook 1 exists as `notebooks/01_data_profiling_and_validation.ipynb`.
 
-It currently follows the Week 1 practical class direction:
+It follows the Week 1 practical class direction:
 
 - Load data and imports.
-- Define simple constants.
-- Read Green Taxi Parquet data.
-- Split reference and analysis datasets.
-- Generate a profiling report.
-- Start a Great Expectations suite.
-- Leave validation and feature-store follow-up visible as next steps.
+- Define simple constants and paths.
+- Read Green Taxi monthly Parquet data with a visible `source_month`.
+- Print compact loading diagnostics and split reference/analysis datasets by month.
+- Generate and save a full profiling report as the main place for data-quality findings.
+- Do not keep a separate initial-checks section when the same content is covered by profiling.
+- Build a starter Great Expectations suite.
+- Validate the later analysis months and summarize results visibly.
+- Leave target, feature, cleaning-threshold, modeling-split, and drift-threshold decisions deferred.
+- Use a single `#` notebook title and numbered `##` sections.
+- Use a first-cell `Sections` index and concise section descriptions.
 
-Current Notebook 1 intentionally keeps the work mostly visible in notebook cells. It has one local helper function for the expectation suite; future work should avoid adding more helpers unless they clearly improve readability.
+Current Notebook 1 intentionally keeps the work mostly visible in notebook cells. It uses small local helper functions only where they make the Great Expectations workflow easier to read; future work should avoid adding more helpers unless they clearly improve readability.
+
+Notebook 1 uses this validation split:
+
+- Reference period: 2024-01 through 2025-12.
+- Analysis period: 2026-01 through 2026-04.
+- This split is only for Notebook 1 validation. It is not the final modeling train/validation/test split or final drift reference/current definition.
+- The full YData Profiling report is saved to `data/08_reporting/green_taxi_reference_profile.html`.
+- Great Expectations checks are starter notebook checks: stable schema and official code checks plus evidence-informed anomaly flags. They are not final production thresholds.
+- The 2026 analysis period currently fails the starter suite on completeness checks for operational fields such as `RatecodeID`, `payment_type`, `trip_type`, `store_and_fwd_flag`, `passenger_count`, and `congestion_surcharge`; this is a profiling finding, not a final cleaning decision.
 
 ## Current Files Present
 
@@ -98,13 +112,7 @@ These remain deferred until the notebooks provide evidence:
 
 ## Next Recommended Step
 
-Finish Notebook 1 at the same beginner pace:
-
-- Complete the Great Expectations validation step.
-- Show validation results visibly in the notebook.
-- Add a short conclusion listing what was learned and what remains deferred.
-
-After Notebook 1 is understandable and complete, start `notebooks/02_feature_engineering_and_feature_store.ipynb` by first reviewing the Week 1 feature store practical notebooks.
+After Notebook 1 is rerun and reviewed, start `notebooks/02_feature_engineering_and_feature_store.ipynb` by first reviewing the Week 1 feature store practical notebooks. Use Notebook 1 findings only as evidence for candidate checks and feature ideas, not as final modeling decisions.
 
 ## Update Protocol
 

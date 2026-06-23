@@ -1,139 +1,38 @@
 {
   "expectations": [
     {
-      "id": "658d2e4a-9af0-47d5-ba73-ba4e442d33b8",
+      "id": "eb9cff6f-f8b3-4136-840a-07fff5ccdbd3",
       "kwargs": {
-        "column": "trip_distance",
-        "max_value": 100.0,
-        "min_value": 0.0
+        "column_set": [
+          "VendorID",
+          "lpep_pickup_datetime",
+          "lpep_dropoff_datetime",
+          "store_and_fwd_flag",
+          "RatecodeID",
+          "PULocationID",
+          "DOLocationID",
+          "passenger_count",
+          "trip_distance",
+          "fare_amount",
+          "extra",
+          "mta_tax",
+          "tip_amount",
+          "tolls_amount",
+          "ehail_fee",
+          "improvement_surcharge",
+          "total_amount",
+          "payment_type",
+          "trip_type",
+          "congestion_surcharge"
+        ],
+        "exact_match": false
       },
       "meta": {},
       "severity": "critical",
-      "type": "expect_column_values_to_be_between"
+      "type": "expect_table_columns_to_match_set"
     },
     {
-      "id": "5a1c57e4-8f35-4ed2-b60e-42780f790178",
-      "kwargs": {
-        "column": "fare_amount",
-        "max_value": 500.0,
-        "min_value": 0.0
-      },
-      "meta": {},
-      "severity": "critical",
-      "type": "expect_column_values_to_be_between"
-    },
-    {
-      "id": "d85592e3-f0f5-46b3-9316-566ac9be786a",
-      "kwargs": {
-        "column": "extra",
-        "max_value": 50.0,
-        "min_value": 0.0
-      },
-      "meta": {},
-      "severity": "critical",
-      "type": "expect_column_values_to_be_between"
-    },
-    {
-      "id": "1b9d0589-e367-4502-abe6-e917552c7c31",
-      "kwargs": {
-        "column": "mta_tax",
-        "max_value": 5.0,
-        "min_value": 0.0
-      },
-      "meta": {},
-      "severity": "critical",
-      "type": "expect_column_values_to_be_between"
-    },
-    {
-      "id": "01a72e6c-eed1-4921-a90d-72fa6d3f2899",
-      "kwargs": {
-        "column": "tip_amount",
-        "max_value": 200.0,
-        "min_value": 0.0
-      },
-      "meta": {},
-      "severity": "critical",
-      "type": "expect_column_values_to_be_between"
-    },
-    {
-      "id": "97e31955-827f-45a8-a45b-8c69680026bb",
-      "kwargs": {
-        "column": "tolls_amount",
-        "max_value": 108.0,
-        "min_value": 0.0
-      },
-      "meta": {},
-      "severity": "critical",
-      "type": "expect_column_values_to_be_between"
-    },
-    {
-      "id": "1f5217ee-f577-4608-912a-cd98f941f93b",
-      "kwargs": {
-        "column": "improvement_surcharge",
-        "max_value": 5.0,
-        "min_value": 0.0
-      },
-      "meta": {},
-      "severity": "critical",
-      "type": "expect_column_values_to_be_between"
-    },
-    {
-      "id": "31e392ff-8954-4ac4-8a90-28170217173e",
-      "kwargs": {
-        "column": "congestion_surcharge",
-        "max_value": 20.0,
-        "min_value": 0.0
-      },
-      "meta": {},
-      "severity": "critical",
-      "type": "expect_column_values_to_be_between"
-    },
-    {
-      "id": "4eaa2aa5-da86-4e7e-92f4-1ec4a00a3e1f",
-      "kwargs": {
-        "column": "total_amount",
-        "max_value": 600.0,
-        "min_value": 0.0
-      },
-      "meta": {},
-      "severity": "critical",
-      "type": "expect_column_values_to_be_between"
-    },
-    {
-      "id": "810673b9-d3ec-4631-b359-2d5a59a906bc",
-      "kwargs": {
-        "column": "passenger_count",
-        "max_value": 9.0,
-        "min_value": 0.0
-      },
-      "meta": {},
-      "severity": "critical",
-      "type": "expect_column_values_to_be_between"
-    },
-    {
-      "id": "bff397b7-6310-46e7-a53b-ad82ab9257cb",
-      "kwargs": {
-        "column": "lpep_pickup_datetime",
-        "max_value": "2026-04-30T23:59:59",
-        "min_value": "2024-01-01T00:00:00"
-      },
-      "meta": {},
-      "severity": "critical",
-      "type": "expect_column_values_to_be_between"
-    },
-    {
-      "id": "1bfc538d-6c9c-4a5f-a245-08523e47bb02",
-      "kwargs": {
-        "column": "lpep_dropoff_datetime",
-        "max_value": "2026-04-30T23:59:59",
-        "min_value": "2024-01-01T00:00:00"
-      },
-      "meta": {},
-      "severity": "critical",
-      "type": "expect_column_values_to_be_between"
-    },
-    {
-      "id": "678bccd8-8993-4627-911a-88712fe80ea6",
+      "id": "ae23b316-23c5-4f47-bf9f-2a0adbf02449",
       "kwargs": {
         "column": "lpep_pickup_datetime"
       },
@@ -142,7 +41,7 @@
       "type": "expect_column_values_to_not_be_null"
     },
     {
-      "id": "42201ba1-90db-4776-a879-1160803b4e12",
+      "id": "f9921d03-c20a-4bc9-8feb-4fb5df9cd72d",
       "kwargs": {
         "column": "lpep_dropoff_datetime"
       },
@@ -151,7 +50,7 @@
       "type": "expect_column_values_to_not_be_null"
     },
     {
-      "id": "91b32578-e19d-48c7-b77d-e73c8fcba252",
+      "id": "4415902a-7d75-436e-8f01-a467e553d264",
       "kwargs": {
         "column": "PULocationID"
       },
@@ -160,7 +59,7 @@
       "type": "expect_column_values_to_not_be_null"
     },
     {
-      "id": "457a4c9f-9ac3-4fac-93dc-2a9e5ac97412",
+      "id": "bdbc506c-e3f5-4a07-a012-3b769ee61044",
       "kwargs": {
         "column": "DOLocationID"
       },
@@ -169,10 +68,128 @@
       "type": "expect_column_values_to_not_be_null"
     },
     {
-      "id": "810682dd-ac7d-467c-86ea-d76682accc07",
+      "id": "f8c28b61-5cc9-4d0d-95b1-1296393d619a",
+      "kwargs": {
+        "column": "trip_distance"
+      },
+      "meta": {},
+      "severity": "critical",
+      "type": "expect_column_values_to_not_be_null"
+    },
+    {
+      "id": "5af0072d-05e4-44b1-aa40-6995573be583",
+      "kwargs": {
+        "column": "fare_amount"
+      },
+      "meta": {},
+      "severity": "critical",
+      "type": "expect_column_values_to_not_be_null"
+    },
+    {
+      "id": "997cc5d0-3b98-4842-96bf-82280745a4dd",
+      "kwargs": {
+        "column": "total_amount"
+      },
+      "meta": {},
+      "severity": "critical",
+      "type": "expect_column_values_to_not_be_null"
+    },
+    {
+      "id": "75568568-6a67-4304-b95d-b18e587acab5",
+      "kwargs": {
+        "column": "source_month"
+      },
+      "meta": {},
+      "severity": "critical",
+      "type": "expect_column_values_to_not_be_null"
+    },
+    {
+      "id": "95bb089c-05f3-4fb4-93ad-8e2cfd742ff1",
+      "kwargs": {
+        "column": "PULocationID",
+        "max_value": 265.0,
+        "min_value": 1.0
+      },
+      "meta": {},
+      "severity": "critical",
+      "type": "expect_column_values_to_be_between"
+    },
+    {
+      "id": "16d4fa60-1a52-4922-8981-02257535e7d9",
+      "kwargs": {
+        "column": "DOLocationID",
+        "max_value": 265.0,
+        "min_value": 1.0
+      },
+      "meta": {},
+      "severity": "critical",
+      "type": "expect_column_values_to_be_between"
+    },
+    {
+      "id": "cf2e290f-b77f-45c1-9401-b40b83372836",
       "kwargs": {
         "column": "RatecodeID",
-        "mostly": 0.99,
+        "mostly": 0.9
+      },
+      "meta": {},
+      "severity": "critical",
+      "type": "expect_column_values_to_not_be_null"
+    },
+    {
+      "id": "19a75787-782c-44e5-bc73-ebeb1013ab73",
+      "kwargs": {
+        "column": "payment_type",
+        "mostly": 0.9
+      },
+      "meta": {},
+      "severity": "critical",
+      "type": "expect_column_values_to_not_be_null"
+    },
+    {
+      "id": "5225f6e1-e9c0-40f5-8989-55cfcba553c4",
+      "kwargs": {
+        "column": "trip_type",
+        "mostly": 0.9
+      },
+      "meta": {},
+      "severity": "critical",
+      "type": "expect_column_values_to_not_be_null"
+    },
+    {
+      "id": "b92bfe6f-317d-4763-85d5-f69a6ccdcb94",
+      "kwargs": {
+        "column": "store_and_fwd_flag",
+        "mostly": 0.9
+      },
+      "meta": {},
+      "severity": "critical",
+      "type": "expect_column_values_to_not_be_null"
+    },
+    {
+      "id": "9cd3a342-1fc6-42fb-a597-84a5a5980ece",
+      "kwargs": {
+        "column": "passenger_count",
+        "mostly": 0.9
+      },
+      "meta": {},
+      "severity": "critical",
+      "type": "expect_column_values_to_not_be_null"
+    },
+    {
+      "id": "22ae90bc-9e6f-4c68-8a85-9deb8baa2fd7",
+      "kwargs": {
+        "column": "congestion_surcharge",
+        "mostly": 0.9
+      },
+      "meta": {},
+      "severity": "critical",
+      "type": "expect_column_values_to_not_be_null"
+    },
+    {
+      "id": "dc3bdaeb-4adf-4f09-b639-0bcf1c388688",
+      "kwargs": {
+        "column": "RatecodeID",
+        "mostly": 0.9,
         "value_set": [
           1,
           2,
@@ -188,10 +205,10 @@
       "type": "expect_column_values_to_be_in_set"
     },
     {
-      "id": "10ccd7d9-4ec4-4f64-8414-bd5233e11489",
+      "id": "613687dc-654e-4921-bd9a-3624fdad5208",
       "kwargs": {
         "column": "payment_type",
-        "mostly": 0.99,
+        "mostly": 0.9,
         "value_set": [
           1,
           2,
@@ -204,9 +221,80 @@
       "meta": {},
       "severity": "critical",
       "type": "expect_column_values_to_be_in_set"
+    },
+    {
+      "id": "d48a2d75-3aac-4439-b817-db712330b72d",
+      "kwargs": {
+        "column": "trip_type",
+        "mostly": 0.9,
+        "value_set": [
+          1,
+          2
+        ]
+      },
+      "meta": {},
+      "severity": "critical",
+      "type": "expect_column_values_to_be_in_set"
+    },
+    {
+      "id": "79271425-a125-4a12-b93d-59291c3446e9",
+      "kwargs": {
+        "column": "store_and_fwd_flag",
+        "mostly": 0.9,
+        "value_set": [
+          "Y",
+          "N"
+        ]
+      },
+      "meta": {},
+      "severity": "critical",
+      "type": "expect_column_values_to_be_in_set"
+    },
+    {
+      "id": "c51039dd-283c-4154-93dc-8138c31af787",
+      "kwargs": {
+        "column_A": "lpep_dropoff_datetime",
+        "column_B": "lpep_pickup_datetime",
+        "mostly": 0.99
+      },
+      "meta": {},
+      "severity": "critical",
+      "type": "expect_column_pair_values_a_to_be_greater_than_b"
+    },
+    {
+      "id": "05b444a8-a1fd-4066-ba7d-d8926f5a9015",
+      "kwargs": {
+        "column": "trip_distance",
+        "min_value": 0.0
+      },
+      "meta": {},
+      "severity": "critical",
+      "type": "expect_column_values_to_be_between"
+    },
+    {
+      "id": "779d1e16-e6d9-45c1-b174-a34440801630",
+      "kwargs": {
+        "column": "fare_amount",
+        "min_value": 0.0,
+        "mostly": 0.99
+      },
+      "meta": {},
+      "severity": "critical",
+      "type": "expect_column_values_to_be_between"
+    },
+    {
+      "id": "d2df5a21-8964-4dd4-bf13-34ad2fafeace",
+      "kwargs": {
+        "column": "total_amount",
+        "min_value": 0.0,
+        "mostly": 0.99
+      },
+      "meta": {},
+      "severity": "critical",
+      "type": "expect_column_values_to_be_between"
     }
   ],
-  "id": "984fafc3-1e34-4e99-ab70-9efeb37874c1",
+  "id": "90d691eb-693a-46aa-875c-e58454d8e32e",
   "meta": {
     "great_expectations_version": "1.18.1"
   },

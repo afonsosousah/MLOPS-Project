@@ -51,6 +51,14 @@ The target reader is a student learning MLOps for the first time. Optimize noteb
 - Introduce Kedro pipelines only after the equivalent notebook workflow is clear.
 - Keep markdown explanations short and tied to the next code cell.
 - If a step feels advanced, add one visible example before abstracting it.
+- Do not leave notebook code or markdown cells ending with an empty line.
+- Write notebook markdown concisely. Use "we" only where it sounds natural; do not force it into every description.
+- Not every notebook section needs a description. If the heading and following code are self-explanatory, leave the section heading alone.
+- Use a more direct and formal tone for problem framing, dataset description, and other sections that describe project facts.
+- Prefer simple prints for compact notebook diagnostics when a table would require verbose display-only DataFrame construction.
+- Avoid duplicating profiling content in an earlier "initial checks" section; keep detailed data-quality findings with the profiling or validation output that supports them.
+- Put specific findings near the relevant code output, then summarize the main findings again in the conclusion.
+- Use a first-cell section index titled `Sections`; do not add title-cell metadata unless that notebook specifically needs it.
 
 ## Karpathy/CLAUDE.md Simplicity Guardrails
 
