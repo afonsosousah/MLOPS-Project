@@ -87,6 +87,7 @@ Current status:
 - The validation execution section summarizes analysis-period results visibly.
 - The current suite is a starter notebook validation suite, not a final production contract.
 - Exact cleaning thresholds remain deferred until the prediction target and feature set are selected.
+- Notebook 2 currently prepares `is_tipped` reference and analysis datasets under `data/02_intermediate/` when executed.
 
 ### Sprint 3: Baseline Modeling and MLflow
 
@@ -102,6 +103,12 @@ Acceptance:
 - Baseline run is reproducible.
 - Metrics are appropriate for the selected target.
 - Model comparison does not rely on notebook-only state.
+
+Current status:
+
+- Notebook 3 has been created as `notebooks/03_experiment_tracking_and_modeling.ipynb`.
+- The initial modeling target is `is_tipped`, a binary classification target from Notebook 2.
+- The notebook starts with simple baselines, logs runs to local MLflow, compares metrics, and then demonstrates Optuna tuning on a random forest candidate.
 
 ### Sprint 4: Model Selection, Explainability, and Reporting Artifacts
 

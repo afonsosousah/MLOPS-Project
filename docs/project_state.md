@@ -80,6 +80,10 @@ Notebook 1 uses this validation split:
 - Great Expectations checks are starter notebook checks: stable schema and official code checks plus evidence-informed anomaly flags. They are not final production thresholds.
 - The 2026 analysis period currently fails the starter suite on completeness checks for operational fields such as `RatecodeID`, `payment_type`, `trip_type`, `store_and_fwd_flag`, `passenger_count`, and `congestion_surcharge`; this is a profiling finding, not a final cleaning decision.
 
+Notebook 2 work currently appears in `notebooks/02_data_preprocessing.ipynb`. It creates the `is_tipped` binary target for credit-card trips, engineers Green Taxi features, and saves reference and analysis datasets to `data/02_intermediate/ref_data.parquet` and `data/02_intermediate/ana_data.parquet` when executed.
+
+Notebook 3 has been started as `notebooks/03_experiment_tracking_and_modeling.ipynb`. It is aligned with Week 2 practical material and focuses on MLflow experiment tracking, baseline classification models, model comparison, and a small Optuna tuning run for `is_tipped`.
+
 ## Current Files Present
 
 - `AGENTS.md`
@@ -93,6 +97,8 @@ Notebook 1 uses this validation split:
 - `docs/course_materials_review.md`
 - `docs/notebook_structure.md`
 - `notebooks/01_data_profiling_and_validation.ipynb`
+- `notebooks/02_data_preprocessing.ipynb`
+- `notebooks/03_experiment_tracking_and_modeling.ipynb`
 - `src/mlops_project/`
 - `tests/`
 
@@ -105,14 +111,15 @@ These remain deferred until the notebooks provide evidence:
 - Train, validation, test, and drift periods.
 - Exact cleaning thresholds.
 - Serving-time feature set.
-- Baseline model and model family.
-- Hyperparameter search space.
+- Final production model family.
+- Final hyperparameter search space beyond the small Notebook 3 demonstration.
 - Drift method and alert thresholds.
 - Which artifacts are needed for the final report.
 
 ## Next Recommended Step
 
 After Notebook 1 is rerun and reviewed, start `notebooks/02_feature_engineering_and_feature_store.ipynb` by first reviewing the Week 1 feature store practical notebooks. Use Notebook 1 findings only as evidence for candidate checks and feature ideas, not as final modeling decisions.
+Run Notebook 2 top-to-bottom so `data/02_intermediate/ref_data.parquet` exists, then run Notebook 3 to produce visible MLflow/modeling evidence. After Notebook 3 is reviewed, decide whether the stable training workflow should be extracted into a Kedro `model_train` pipeline.
 
 ## Update Protocol
 
