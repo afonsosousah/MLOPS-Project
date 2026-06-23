@@ -24,6 +24,7 @@ dependencies = [
     "mlflow>=3.0",
     "optuna>=4.0",
     "optuna-integration[mlflow]>=4.0",
+    "hopsworks>=5.0.0",
 ]
 
 [project.scripts]

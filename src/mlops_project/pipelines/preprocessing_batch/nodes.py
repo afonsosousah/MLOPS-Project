@@ -8,19 +8,19 @@ from mlops_project.pipelines.preprocessing_train.nodes import clean_data, engine
 logger = logging.getLogger(__name__)
 
 
-def preprocess_batch(ana_data: pd.DataFrame, encoder_transform: OneHotEncoder) -> pd.DataFrame:
+def preprocess_batch(analysis_data: pd.DataFrame, encoder_transform: OneHotEncoder) -> pd.DataFrame:
     """
     Preprocessing for batch/analysis data using the encoder fitted on training data.
     No target column is created — this data is for inference and drift monitoring.
 
     Args:
-        ana_data: 2025+ analysis data from split_data pipeline.
+        analysis_data: 2026 analysis data from split_data pipeline.
         encoder_transform: Fitted OneHotEncoder from preprocessing_train pipeline.
 
     Returns:
         preprocessed_batch_data: Model-ready DataFrame (no target column).
     """
-    df = clean_data(ana_data)
+    df = clean_data(analysis_data)
     df = engineer_features(df)
 
     # Apply saved encoder (do not refit)

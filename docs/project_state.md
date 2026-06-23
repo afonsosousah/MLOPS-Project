@@ -79,10 +79,18 @@ Notebook 1 uses this validation split:
 - The full YData Profiling report is saved to `data/08_reporting/green_taxi_reference_profile.html`.
 - Great Expectations checks are starter notebook checks: stable schema and official code checks plus evidence-informed anomaly flags. They are not final production thresholds.
 - The 2026 analysis period currently fails the starter suite on completeness checks for operational fields such as `RatecodeID`, `payment_type`, `trip_type`, `store_and_fwd_flag`, `passenger_count`, and `congestion_surcharge`; this is a profiling finding, not a final cleaning decision.
+- Notebook 1 should mention that the productionized version of this boundary is split across Kedro `ingestion` and `data_unit_tests`: ingestion loads/enriches data, while data-unit tests run the Great Expectations checks.
 
 Notebook 2 work currently appears in `notebooks/02_data_preprocessing.ipynb`. It creates the `is_tipped` binary target for credit-card trips, engineers Green Taxi features, and saves reference and analysis datasets to `data/02_intermediate/ref_data.parquet` and `data/02_intermediate/ana_data.parquet` when executed.
 
 Notebook 3 has been started as `notebooks/03_experiment_tracking_and_modeling.ipynb`. It is aligned with Week 2 practical material and focuses on MLflow experiment tracking, baseline classification models, model comparison, and a small Optuna tuning run for `is_tipped`.
+
+## Current Kedro Pipeline Work
+
+- The current Kedro extraction includes `ingestion`, `data_unit_tests`, `split_data`, `preprocessing_train`, and `preprocessing_batch` pipeline folders.
+- `ingestion` is intentionally limited to loading monthly Green Taxi partitions, dropping fully null `ehail_fee`, and joining stable taxi-zone borough fields.
+- Great Expectations checks are centralized in `data_unit_tests`, which depends on the `ingestion` output `ingested_data`; selecting the `data_unit_tests` pipeline should run ingestion first so the validation node has its input.
+- The raw Green Taxi monthly files should be loaded from `data/01_raw/green_taxi/` as partitioned Parquet data, with `data/01_raw/taxi_zone_lookup.csv` cataloged separately for the zone join.
 
 ## Current Files Present
 

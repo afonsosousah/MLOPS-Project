@@ -96,5 +96,17 @@
 #   versioned: true
 
 green_taxi_raw:
-  type: pandas.ParquetDataset
-  filepath: data/01_raw/green_taxi
+  type: partitions.PartitionedDataset
+  path: data/01_raw/green_taxi
+  dataset: pandas.ParquetDataset
+  filename_suffix: .parquet
+
+zone_lookup:
+  type: pandas.CSVDataset
+  filepath: data/01_raw/taxi_zone_lookup.csv
+
+reporting_tests:
+  type: pandas.CSVDataset
+  filepath: data/08_reporting/data_unit_tests_report.csv
+  save_args:
+    index: false

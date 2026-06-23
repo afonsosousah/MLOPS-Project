@@ -13,10 +13,10 @@
       "name": "green_taxi_data_source"
     }
   },
-  "id": "49fc7336-bde4-4344-bbda-97d8e12b8d43",
+  "id": "30d5aaab-09ed-466e-868e-631c13e82966",
   "name": "green_taxi_pipeline_validation",
   "suite": {
-    "id": "90d691eb-693a-46aa-875c-e58454d8e32e",
+    "id": "e00c3964-c8cd-4509-b2f0-b2ae94f72284",
     "name": "green_taxi_quality_v1"
   }
 }

@@ -88,6 +88,7 @@ Purpose:
 - Keep the profiling section as the main place for detailed data-quality findings.
 - Build starter Great Expectations checks based on observed data and official TLC code sets.
 - Validate the analysis dataset and show a readable validation summary.
+- Briefly explain that the same production responsibility is now separated into the Kedro `ingestion` and `data_unit_tests` pipelines.
 - Keep outputs visible so the validation process is understandable.
 - End with conclusions and deferred decisions instead of selecting the final target, model split, feature set, or cleaning thresholds.
 - Use a single `#` notebook title, numbered `##` sections, and smaller headings for subsections when needed.
