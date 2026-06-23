@@ -166,3 +166,5 @@ class_materials
 .vscode
 .pytest_cache
 /classes
+/src/mlops_project
+/src/mlops_project

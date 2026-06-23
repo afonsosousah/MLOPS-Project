@@ -10,3 +10,6 @@ seaborn~=0.12.1
 ydata-profiling>=4.6.0
 great-expectations>=1.0.0
 hopsworks>=3.7.0
+fastapi>=0.111.0
+uvicorn[standard]>=0.30.0
+pydantic>=2.7.0
