@@ -1,0 +1,24 @@
+# Shared parameters used across all pipelines.
+
+# Target variable
+target_column: is_tipped ### change if target var is changed
+
+# Train/test split
+test_size: 0.2
+random_state: 42
+
+# Data split by year
+reference_years:
+  - 2024
+analysis_years:
+  - 2025
+  - 2026
+
+# Feature store 
+# when Hopsworks credentials are configured in conf/local/ -> set to TRUE
+to_feature_store: false
+
+# MLflow tracking
+mlflow_tracking_uri: mlruns
+mlflow_experiment_name: green_taxi_is_tipped ### change if target var is changed
+mlflow_registered_model_name: green_taxi_classifier

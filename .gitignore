@@ -165,3 +165,4 @@ class_materials
 
 .vscode
 .pytest_cache
+/classes

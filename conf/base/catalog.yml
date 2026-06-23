@@ -1,4 +1,3 @@
-# Here you can define all your data sets by using simple YAML syntax.
 #
 # Documentation for this file format can be found in "The Data Catalog"
 # Link: https://docs.kedro.org/en/stable/data/data_catalog.html
@@ -48,6 +47,68 @@ green_taxi_raw:
 zone_lookup:
   type: pandas.CSVDataset
   filepath: data/01_raw/taxi_zone_lookup.csv
+
+# intermediate: pipeline outputs after ingestion and splitting
+
+ingested_data:
+  type: pandas.ParquetDataset
+  filepath: data/02_intermediate/ingested_data.parquet
+
+ref_data:
+  type: pandas.ParquetDataset
+  filepath: data/02_intermediate/ref_data.parquet
+
+analysis_data:
+  type: pandas.ParquetDataset
+  filepath: data/02_intermediate/analysis_data.parquet
+
+# model_input: train/test splits ready for modeling
+
+X_train:
+  type: pandas.ParquetDataset
+  filepath: data/05_model_input/X_train.parquet
+
+X_test:
+  type: pandas.ParquetDataset
+  filepath: data/05_model_input/X_test.parquet
+
+y_train:
+  type: pandas.CSVDataset
+  filepath: data/05_model_input/y_train.csv
+  save_args:
+    index: false
+
+y_test:
+  type: pandas.CSVDataset
+  filepath: data/05_model_input/y_test.csv
+  save_args:
+    index: false
+
+# models: fitted artifacts
+
+encoder_transform:
+  type: pickle.PickleDataset
+  filepath: data/06_models/encoder_transform.pkl
+
+trained_model:
+  type: pickle.PickleDataset
+  filepath: data/06_models/trained_model.pkl
+
+# model_output: batch predictions and explanations
+
+preprocessed_batch_data:
+  type: pandas.ParquetDataset
+  filepath: data/07_model_output/preprocessed_batch_data.parquet
+
+predictions:
+  type: pandas.ParquetDataset
+  filepath: data/07_model_output/predictions.parquet
+
+shap_values:
+  type: pandas.ParquetDataset
+  filepath: data/07_model_output/shap_values.parquet
+
+# reporting
 
 reporting_tests:
   type: pandas.CSVDataset
