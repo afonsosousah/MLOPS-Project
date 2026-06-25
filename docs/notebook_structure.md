@@ -1,6 +1,6 @@
 # Notebook Structure
 
-Last updated: 2026-06-20
+Last updated: 2026-06-25
 
 Notebook organization should mirror the practical classes by topic and section flow, but not by class week or folder. This project uses a small flat set of final-delivery notebooks directly under `notebooks/`.
 
@@ -112,7 +112,7 @@ Purpose:
 
 - Start with a simple baseline model.
 - Log parameters, metrics, and artifacts to MLflow.
-- Compare models only after the baseline works.
+- Compare regression models for the current `tip_amount` target only after the baseline works.
 - Add Optuna only if the baseline and metric choice are clear.
 
 ## Kedro Extraction: No Dedicated Notebook

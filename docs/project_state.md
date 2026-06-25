@@ -1,6 +1,6 @@
 # Project State
 
-Last updated: 2026-06-20
+Last updated: 2026-06-26
 
 ## Scope
 
@@ -76,9 +76,9 @@ Notebook 1 uses this validation split:
 - The 2026 analysis period currently fails the starter suite on completeness checks for operational fields such as `RatecodeID`, `payment_type`, `trip_type`, `store_and_fwd_flag`, `passenger_count`, and `congestion_surcharge`; this is a profiling finding, not a final cleaning decision.
 - Notebook 1 should mention that the productionized version of this boundary is split across Kedro `ingestion` and `data_unit_tests`: ingestion loads/enriches data, while data-unit tests run the Great Expectations checks.
 
-Notebook 2 work currently appears in `notebooks/02_data_preprocessing.ipynb`. It creates the `is_tipped` binary target for credit-card trips, engineers Green Taxi features, and saves reference and analysis datasets to `data/02_intermediate/ref_data.parquet` and `data/02_intermediate/ana_data.parquet` when executed.
+Notebook 2 work currently appears in `notebooks/02_data_preprocessing.ipynb`. It prepares Green Taxi modeling features and saves intermediate train/analysis datasets under `data/02_intermediate/` when executed.
 
-Notebook 3 has been started as `notebooks/03_experiment_tracking_and_modeling.ipynb`. It is aligned with Week 2 practical material and focuses on MLflow experiment tracking, baseline classification models, model comparison, and a small Optuna tuning run for `is_tipped`.
+Notebook 3 has been started as `notebooks/03_experiment_tracking_and_modeling.ipynb`. It is aligned with Week 2 practical material and now focuses on MLflow experiment tracking, baseline regression models, model comparison, and a small Optuna tuning run for the `tip_amount` target. MLflow sklearn model artifacts should use the safer `skops` serialization format with `numpy.dtype` explicitly trusted for the current sklearn pipelines. Model logging should use MLflow 3's `name="model"` argument and an explicit conda environment so the notebook does not emit `artifact_path` deprecation or pip version inference warnings. Disable MLflow environment-variable recording in this notebook so local variable names are not written into model logging output.
 
 ## Current Kedro Pipeline Work
 
@@ -107,7 +107,7 @@ Notebook 3 has been started as `notebooks/03_experiment_tracking_and_modeling.ip
 
 These remain deferred until the notebooks provide evidence:
 
-- Final prediction target.
+- Final production prediction target beyond the current `tip_amount` regression notebook.
 - Success metrics and thresholds.
 - Train, validation, test, and drift periods.
 - Exact cleaning thresholds.

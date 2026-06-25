@@ -1,6 +1,6 @@
 # Project Plan
 
-Last updated: 2026-06-20
+Last updated: 2026-06-26
 
 ## Goal
 
@@ -22,7 +22,7 @@ Course-level success criteria:
 - Tests.
 - Six-page maximum report with package versions and production discussion.
 
-Project-specific success criteria are deferred until data profiling and target selection. Do not define final metric thresholds until the modeling problem is chosen.
+Notebook 3 currently uses `tip_amount` as a regression target. Project-specific metric thresholds remain deferred until the modeling evidence is reviewed.
 
 ## Planned Sprints
 
@@ -83,7 +83,7 @@ Current status:
 - Notebook 1 has started the Great Expectations suite in the notebook itself.
 - The validation execution section still needs to be completed visibly before extracting code into reusable modules.
 - Exact cleaning thresholds remain deferred until the prediction target and feature set are selected.
-- Notebook 2 currently prepares `is_tipped` reference and analysis datasets under `data/02_intermediate/` when executed.
+- Notebook 2 currently prepares `tip_amount` train and validation datasets under `data/02_intermediate/` when executed.
 - Kedro `ingestion` and `data_unit_tests` pipeline folders now exist. `ingestion` only loads and enriches raw data; Great Expectations validation is centralized in `data_unit_tests`. The selected `data_unit_tests` run should include ingestion first because its validation node consumes `ingested_data` rather than raw partitions directly.
 - Notebook 1 should briefly point readers from the visible notebook validation logic to these Kedro pipelines, without turning the notebook into pipeline documentation.
 
@@ -101,6 +101,14 @@ Acceptance:
 - Baseline run is reproducible.
 - Metrics are appropriate for the selected target.
 - Model comparison does not rely on notebook-only state.
+
+Current status:
+
+- Notebook 3 now uses `tip_amount` regression.
+- Regression metrics should include errors such as MAE/RMSE and a fit metric such as R2.
+- MLflow model logging should use `skops` serialization with the narrow trusted type `numpy.dtype` instead of CloudPickle.
+- MLflow model logging should use `name="model"` and an explicit conda environment to avoid MLflow 3 `artifact_path` deprecation and pip version inference warnings.
+- Notebook 3 should disable MLflow environment-variable recording to avoid noisy local environment variable notices in visible outputs.
 
 ### Sprint 4: Model Selection, Explainability, and Reporting Artifacts
 

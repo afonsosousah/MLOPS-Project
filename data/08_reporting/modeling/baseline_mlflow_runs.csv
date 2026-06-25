@@ -1,0 +1,4 @@
+model,run_id,artifact_uri,description,mae,rmse,median_ae,r2
+random_forest_regressor,33e8c24bbaf140229df4c590e24ec2aa,file:///C:/Users/Asus/Documents/MLOPS%20Project/mlruns/711576700630049568/33e8c24bbaf140229df4c590e24ec2aa/artifacts,Tree-based regression model that can capture non-linear patterns.,1.4669075291625149,2.8149885889036956,0.7914693684517595,0.39289046180326914
+ridge_regression,70e75e2d48aa4fb6a44e0e2b4b736483,file:///C:/Users/Asus/Documents/MLOPS%20Project/mlruns/711576700630049568/70e75e2d48aa4fb6a44e0e2b4b736483/artifacts,Simple regularized linear regression model.,1.4756996652970749,2.831265007108623,0.7855211899873853,0.3858494836161457
+dummy_median,501ec628c66245419d57b9b5b20a6773,file:///C:/Users/Asus/Documents/MLOPS%20Project/mlruns/711576700630049568/501ec628c66245419d57b9b5b20a6773/artifacts,Naive baseline that always predicts the median tip amount.,2.0945139999999998,3.7167928987233068,1.2000000000000002,-0.058401639846991316
