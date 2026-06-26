@@ -25,6 +25,7 @@ dependencies = [
     "optuna>=4.0",
     "optuna-integration[mlflow]>=4.0",
     "hopsworks>=5.0.0",
+    "confluent-kafka>=2.14.2",
 ]
 
 [project.scripts]
