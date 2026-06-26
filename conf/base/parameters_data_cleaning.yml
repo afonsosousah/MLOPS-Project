@@ -1,0 +1,12 @@
+data_cleaning:
+  min_pickup_datetime: "2024-01-01"
+  min_trip_distance: 0
+  max_trip_distance: 100
+  min_fare_amount: 0
+  max_fare_amount: 500
+  min_duration_min: 1
+  max_duration_min: 180
+  min_tip_amount: 0
+  max_tip_amount: 200
+  min_location_id: 1
+  max_location_id: 263

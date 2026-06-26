@@ -28,6 +28,12 @@ analysis_data:
   type: pandas.ParquetDataset
   filepath: data/02_intermediate/analysis_data.parquet
 
+# primary: data after cleaning pipeline 
+
+cleaned_data:
+  type: pandas.ParquetDataset
+  filepath: data/03_primary/cleaned_data.parquet
+
 # model_input: outputs produced by preprocessing_train
 
 train_data:
