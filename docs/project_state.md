@@ -86,6 +86,9 @@ Notebook 3 has been started as `notebooks/03_experiment_tracking_and_modeling.ip
 - `ingestion` is intentionally limited to loading monthly Green Taxi partitions, dropping fully null `ehail_fee`, and joining stable taxi-zone borough fields.
 - Great Expectations checks are centralized in `data_unit_tests`, which depends on the `ingestion` output `ingested_data`; selecting the `data_unit_tests` pipeline should run ingestion first so the validation node has its input.
 - The raw Green Taxi monthly files should be loaded from `data/01_raw/green_taxi/` as partitioned Parquet data, with `data/01_raw/taxi_zone_lookup.csv` cataloged separately for the zone join.
+- Kedro registry output should exclude the generated starter/example pipelines (`example_data_processing`, `example_data_science`, and the starter `reporting` pipeline). They use toy Spaceflights datasets and can collide with Green Taxi outputs such as `X_train`, `X_test`, `y_train`, and `y_test`.
+- `src/mlops_project/pipeline_registry.py` should explicitly register only active Green Taxi pipelines instead of auto-discovering every folder under `src/mlops_project/pipelines/`.
+- `conf/base/catalog.yml` should describe the active Green Taxi datasets only: raw partitions, zone lookup, intermediate split data, model-input splits, fitted preprocessing/model artifacts, batch outputs, explainability artifacts, and validation reports.
 
 ## Current Files Present
 

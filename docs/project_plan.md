@@ -85,6 +85,7 @@ Current status:
 - Exact cleaning thresholds remain deferred until the prediction target and feature set are selected.
 - Notebook 2 currently prepares `tip_amount` train and validation datasets under `data/02_intermediate/` when executed.
 - Kedro `ingestion` and `data_unit_tests` pipeline folders now exist. `ingestion` only loads and enriches raw data; Great Expectations validation is centralized in `data_unit_tests`. The selected `data_unit_tests` run should include ingestion first because its validation node consumes `ingested_data` rather than raw partitions directly.
+- Kedro registration should keep generated starter pipelines out of the active registry/default graph so Kedro Viz and pipeline runs show only the Green Taxi project work.
 - Notebook 1 should briefly point readers from the visible notebook validation logic to these Kedro pipelines, without turning the notebook into pipeline documentation.
 
 ### Sprint 3: Baseline Modeling and MLflow
@@ -207,6 +208,8 @@ MLOPS Project/
 ## Pipeline Extraction Plan
 
 Pipelines are not the starting point. First make the workflow clear in notebooks, then extract the small stable parts needed for reproducibility.
+
+The active Kedro registry should explicitly register the Green Taxi pipelines that match this extraction plan. Generated starter/example pipelines can remain in the source tree temporarily for reference, but they should not be registered or included in `__default__` because their toy datasets are outside the project contract.
 
 ## Notebook to Practical Class Mapping
 

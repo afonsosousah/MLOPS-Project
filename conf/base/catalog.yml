@@ -1,42 +1,8 @@
-#
-# Documentation for this file format can be found in "The Data Catalog"
-# Link: https://docs.kedro.org/en/stable/data/data_catalog.html
-#
-# We support interacting with a variety of data stores including local file systems, cloud, network and HDFS
-#
-# An example data set definition can look as follows:
-#
-#bikes:
-#  type: pandas.CSVDataset
-#  filepath: "data/01_raw/bikes.csv"
-#
-#weather:
-#  type: spark.SparkDataset
-#  filepath: s3a://your_bucket/data/01_raw/weather*
-#  file_format: csv
-#  credentials: dev_s3
-#  load_args:
-#    header: True
-#    inferSchema: True
-#  save_args:
-#    sep: '|'
-#    header: True
-#
-#scooters:
-#  type: pandas.SQLTableDataset
-#  credentials: scooters_credentials
-#  table_name: scooters
-#  load_args:
-#    index_col: ['name']
-#    columns: ['name', 'gear']
-#  save_args:
-#    if_exists: 'replace'
-#    # if_exists: 'fail'
-#    # if_exists: 'append'
-#
-# The Data Catalog supports being able to reference the same file using two different Dataset implementations
-# (transcoding), templating and a way to reuse arguments that are frequently repeated. See more here:
-# https://docs.kedro.org/en/stable/data/data_catalog.html
+# Active Kedro catalog for the Green Taxi MLOps project.
+# Generated starter Spaceflights datasets are intentionally omitted because the
+# starter pipelines are not part of the registered project graph.
+
+# raw: source data used by ingestion
 
 green_taxi_raw:
   type: partitions.PartitionedDataset
@@ -48,7 +14,7 @@ zone_lookup:
   type: pandas.CSVDataset
   filepath: data/01_raw/taxi_zone_lookup.csv
 
-# intermediate: pipeline outputs after ingestion and splitting
+# intermediate: ingestion and reference/current split outputs
 
 ingested_data:
   type: pandas.ParquetDataset
@@ -62,7 +28,7 @@ analysis_data:
   type: pandas.ParquetDataset
   filepath: data/02_intermediate/analysis_data.parquet
 
-# model_input: train/test splits ready for modeling
+# model_input: outputs produced by preprocessing_train
 
 X_train:
   type: pandas.ParquetDataset
@@ -84,7 +50,7 @@ y_test:
   save_args:
     index: false
 
-# models: fitted artifacts
+# models: fitted preprocessing and model artifacts
 
 encoder_transform:
   type: pickle.PickleDataset
@@ -94,7 +60,7 @@ trained_model:
   type: pickle.PickleDataset
   filepath: data/06_models/trained_model.pkl
 
-# model_output: batch predictions and explanations
+# model_output: batch inference and explanation artifacts
 
 preprocessed_batch_data:
   type: pandas.ParquetDataset
@@ -108,7 +74,7 @@ shap_values:
   type: pandas.ParquetDataset
   filepath: data/07_model_output/shap_values.parquet
 
-# reporting
+# reporting: reproducible validation and report artifacts
 
 reporting_tests:
   type: pandas.CSVDataset
