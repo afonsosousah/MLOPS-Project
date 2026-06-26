@@ -1,17 +1,21 @@
 # Shared parameters used across all pipelines.
 
 # Target variable
-target_column: is_tipped ### change if target var is changed
+target_column: tip_amount
 
 # Train/test split
 test_size: 0.2
 random_state: 42
 
-# Data split by year
+# Data splits by years
 reference_years:
   - 2024
 analysis_years:
   - 2025
+modeling_years:
+  - 2024
+  - 2025
+drift_years:
   - 2026
 
 # Feature store 
@@ -19,6 +23,6 @@ analysis_years:
 to_feature_store: false
 
 # MLflow tracking
-mlflow_tracking_uri: mlruns
-mlflow_experiment_name: green_taxi_is_tipped ### change if target var is changed
-mlflow_registered_model_name: green_taxi_classifier
+mlflow_tracking_uri: sqlite:///mlflow.db
+mlflow_experiment_name: green_taxi_tip_amount
+mlflow_registered_model_name: green_taxi_regressor

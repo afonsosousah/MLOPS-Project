@@ -62,6 +62,9 @@ def model_train(
             ("regressor", RandomForestRegressor(**model_params)),
         ]
     )
+    
+    mlflow.set_tracking_uri(parameters["mlflow_tracking_uri"])
+    mlflow.set_experiment(parameters["mlflow_experiment_name"])
 
     with mlflow.start_run(run_name="kedro_random_forest_regressor", nested=True):
         model.fit(X_train, y_train)

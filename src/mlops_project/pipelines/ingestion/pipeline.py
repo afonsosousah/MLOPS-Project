@@ -8,8 +8,13 @@ def create_pipeline(**kwargs) -> Pipeline:
         [
             node(
                 func=ingestion,
-                inputs=["green_taxi_raw", "zone_lookup", "parameters"],
-                outputs="ingested_data",
+                inputs=[
+                    "green_taxi_raw",
+                    "zone_lookup",
+                    "params:modeling_years",
+                    "params:drift_years",
+                ],
+                outputs=["modeling_ingested_data", "drift_ingested_data"],
                 name="ingestion_node",
             ),
         ]

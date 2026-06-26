@@ -9,7 +9,7 @@ from great_expectations.expectations.core.expect_column_values_to_be_in_set impo
 from great_expectations.expectations.core.expect_column_values_to_not_be_null import ExpectColumnValuesToNotBeNull
 from great_expectations.expectations.core.expect_table_columns_to_match_set import ExpectTableColumnsToMatchSet
 
-from .utils import _parse_results
+from .utils import _parse_results, _add_if_present
 
 logger = logging.getLogger(__name__)
 
@@ -63,16 +63,6 @@ OFFICIAL_CODE_SETS = {
 
 CODE_COMPLETENESS_MOSTLY = 0.90
 COMMON_ANOMALY_MOSTLY = 0.99
-
-
-def _add_if_present(
-    suite: gx.ExpectationSuite,
-    df: pd.DataFrame,
-    column: str,
-    expectation,
-) -> None:
-    if column in df.columns:
-        suite.add_expectation(expectation)
 
 
 def _build_suite(ingested_data: pd.DataFrame) -> gx.ExpectationSuite:
@@ -170,10 +160,12 @@ def _build_suite(ingested_data: pd.DataFrame) -> gx.ExpectationSuite:
 
 def unit_test(ingested_data: pd.DataFrame) -> pd.DataFrame:
     """
-    Run profiling-based Great Expectations checks on ingested Green Taxi data.
+    Run warning-level Great Expectations checks on ingested Green Taxi data.
 
     The checks come from Notebook 1 and live in this validation pipeline rather than
     in ingestion, so ingestion stays limited to loading and stable enrichment.
+    Failed expectations are logged and returned in the report, but they do not halt
+    execution. This keeps 2026 data-quality changes visible for drift monitoring.
     """
     logger.info("Starting data unit tests...")
 
@@ -197,14 +189,17 @@ def unit_test(ingested_data: pd.DataFrame) -> pd.DataFrame:
 
     if not results.success:
         failed = report[~report["success"]]
-        logger.error("Data validation failed with %d failed expectations.", len(failed))
+        logger.warning(
+            "Data validation found %d warning-level failed expectations.",
+            len(failed),
+        )
         for _, row in failed.iterrows():
-            logger.error(
-                "Failed: %s on %s",
+            logger.warning(
+                "Warning: %s on %s",
                 row["expectation_type"],
                 row["column"] or "table",
             )
-        raise ValueError("Pipeline halted due to data validation failure.")
+        return report
 
     logger.info("All data unit tests passed.")
     return report

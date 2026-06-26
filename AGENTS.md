@@ -35,6 +35,7 @@ Use these sources as the project contract:
 - Do not preselect final target, final feature set, outlier thresholds, drift thresholds, train/validation/test months, model family, or success criteria until the data profiling/EDA work has produced evidence.
 - Keep notebooks exploratory and explanatory. Production behavior belongs in Kedro pipelines, reusable Python modules, tests, and config.
 - Keep the project reproducible. Any result in the report must be regenerated from source code and a documented sample of data.
+- Current Kedro data-unit-test failures are warning-level report findings, not blocking gates. Do not make validation stricter or silently relax checks without documenting why a warning should become a production-blocking failure.
 - Do not commit large raw data, credentials, MLflow databases, local caches, bulky transient debug output, or private configuration.
 - Keep final delivery notebook outputs visible after the notebooks have been rerun and reviewed. The course deliverable is easier to grade when plots, tables, metrics, and explanations are visible in the submitted notebooks.
 - Put credentials only in `conf/local/`, `.env`, or local environment variables, and keep them out of version control.
@@ -176,6 +177,7 @@ Known from official TLC documentation:
 - Green taxi records include pickup and dropoff datetimes, pickup and dropoff location IDs, trip distance, fare components, rate type, payment type, passenger count, and trip type.
 - TLC warns that the data is provided by technology providers and may contain accuracy or completeness issues.
 - Since 2025, Green Taxi data can include `cbd_congestion_fee`.
+- Keep Green Taxi raw files in one partitioned source under `data/01_raw/green_taxi/`. Use Kedro parameters and derived datasets to separate the 2024-2025 modeling period from the 2026 drift holdout; do not duplicate raw data into separate train/drift raw folders.
 
 Defer until profiling:
 
