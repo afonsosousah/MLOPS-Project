@@ -2512,6 +2512,20 @@ plotly-plotlydataset = [
 ]
 
 [[package]]
+name = "kedro-mlflow"
+version = "2.0.3"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "kedro" },
+    { name = "mlflow" },
+    { name = "pydantic" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/8f/db/6411e79e1f8c32212f84bfb90103686628e3e6182c78dd4fe8c5cb3a8cf8/kedro_mlflow-2.0.3.tar.gz", hash = "sha256:50ee404fe595f1a2dbe01fdb2e5f2053cf6e8a2787ecfb1d6d0451523a72da9a", size = 1384317, upload-time = "2026-05-10T22:17:33.774Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/c7/67/6f9373c22504f91cc6f0d54e756ef37a64c55d036f1a91473a6538a1a68d/kedro_mlflow-2.0.3-py3-none-any.whl", hash = "sha256:05c2731e003b8021495edd38c59c77f0ccf9641f396006fd8e26ed0a824a1df3", size = 55239, upload-time = "2026-05-10T22:17:32.28Z" },
+]
+
+[[package]]
 name = "kedro-telemetry"
 version = "0.8.0"
 source = { registry = "https://pypi.org/simple" }
@@ -3090,11 +3104,13 @@ dependencies = [
     { name = "jupyterlab" },
     { name = "kedro", extra = ["jupyter"] },
     { name = "kedro-datasets", extra = ["matplotlib-matplotlibdataset", "pandas-csvdataset", "pandas-exceldataset", "pandas-parquetdataset", "plotly-jsondataset", "plotly-plotlydataset"] },
+    { name = "kedro-mlflow" },
     { name = "kedro-viz" },
     { name = "mlflow" },
     { name = "notebook" },
     { name = "optuna" },
     { name = "optuna-integration", extra = ["mlflow"] },
+    { name = "pytest" },
     { name = "scikit-learn", version = "1.5.2", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
     { name = "scikit-learn", version = "1.8.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.11'" },
     { name = "seaborn" },
@@ -3137,13 +3153,15 @@ requires-dist = [
     { name = "jupyterlab", specifier = ">=3.0" },
     { name = "kedro", extras = ["jupyter"], specifier = "~=1.4.0" },
     { name = "kedro-datasets", extras = ["matplotlib-matplotlibdataset", "pandas-csvdataset", "pandas-exceldataset", "pandas-parquetdataset", "plotly-jsondataset", "plotly-plotlydataset"], specifier = ">=3.0" },
+    { name = "kedro-mlflow", specifier = ">=2.0.3" },
     { name = "kedro-viz", specifier = ">=6.7.0" },
-    { name = "mlflow", specifier = ">=3.0" },
+    { name = "mlflow", specifier = ">=3.10" },
     { name = "myst-parser", marker = "extra == 'docs'", specifier = ">=1.0,<2.1" },
     { name = "nbsphinx", marker = "extra == 'docs'", specifier = "==0.8.1" },
     { name = "notebook" },
     { name = "optuna", specifier = ">=4.0" },
     { name = "optuna-integration", extras = ["mlflow"], specifier = ">=4.0" },
+    { name = "pytest", specifier = ">=7.4.4" },
     { name = "pytest", marker = "extra == 'dev'", specifier = "~=7.2" },
     { name = "pytest-cov", marker = "extra == 'dev'", specifier = ">=3,<7" },
     { name = "pytest-mock", marker = "extra == 'dev'", specifier = ">=1.7.1,<2.0" },

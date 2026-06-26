@@ -1,6 +1,6 @@
 # Project State
 
-Last updated: 2026-06-26
+Last updated: 2026-06-27
 
 ## Scope
 
@@ -84,7 +84,8 @@ Notebook 3 has been started as `notebooks/03_experiment_tracking_and_modeling.ip
 
 - The current Kedro extraction includes `ingestion`, `data_unit_tests`, `split_data`, `preprocessing_train`, and `preprocessing_batch` pipeline folders.
 - `ingestion` is intentionally limited to loading monthly Green Taxi partitions, dropping fully null `ehail_fee`, and joining stable taxi-zone borough fields.
-- Great Expectations checks are centralized in `data_unit_tests`, which depends on the `ingestion` output `ingested_data`; selecting the `data_unit_tests` pipeline should run ingestion first so the validation node has its input.
+- The raw Green Taxi source remains one partitioned dataset under `data/01_raw/green_taxi/`. The ingestion pipeline filters this single source by configured year groups: `modeling_ingested_data` contains the 2024-2025 modeling period, and `drift_ingested_data` contains the 2026 holdout period for the drift section.
+- Great Expectations checks are centralized in `data_unit_tests`, which validates both `modeling_ingested_data` and `drift_ingested_data`. Failed expectations are logged and saved as warning-level findings instead of blocking pipeline execution, because 2026 completeness failures are monitoring evidence rather than automatic cleaning decisions.
 - The raw Green Taxi monthly files should be loaded from `data/01_raw/green_taxi/` as partitioned Parquet data, with `data/01_raw/taxi_zone_lookup.csv` cataloged separately for the zone join.
 - Kedro registry output should exclude the generated starter/example pipelines (`example_data_processing`, `example_data_science`, and the starter `reporting` pipeline). They use toy Spaceflights datasets and can collide with Green Taxi outputs such as `X_train`, `X_test`, `y_train`, and `y_test`.
 - `src/mlops_project/pipeline_registry.py` should explicitly register only active Green Taxi pipelines instead of auto-discovering every folder under `src/mlops_project/pipelines/`.
@@ -112,7 +113,7 @@ These remain deferred until the notebooks provide evidence:
 
 - Final production prediction target beyond the current `tip_amount` regression notebook.
 - Success metrics and thresholds.
-- Train, validation, test, and drift periods.
+- Exact train/validation/test split inside the 2024-2025 modeling period.
 - Exact cleaning thresholds.
 - Serving-time feature set.
 - Baseline model and model family.

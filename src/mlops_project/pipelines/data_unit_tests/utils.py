@@ -1,5 +1,14 @@
 import pandas as pd
+import great_expectations as gx
 
+def _add_if_present(
+    suite: gx.ExpectationSuite,
+    df: pd.DataFrame,
+    column: str,
+    expectation,
+) -> None:
+    if column in df.columns:
+        suite.add_expectation(expectation)
 
 def _parse_results(results) -> pd.DataFrame:
     rows = []
@@ -11,6 +20,7 @@ def _parse_results(results) -> pd.DataFrame:
         rows.append(
             {
                 "success": r.success,
+                "severity": "pass" if r.success else "warning",
                 "expectation_type": r.expectation_config.type,
                 "column": column,
                 "min_value": kwargs.get("min_value", ""),

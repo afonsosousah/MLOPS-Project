@@ -14,19 +14,15 @@ zone_lookup:
   type: pandas.CSVDataset
   filepath: data/01_raw/taxi_zone_lookup.csv
 
-# intermediate: ingestion and reference/current split outputs
+# intermediate: ingestion
 
-ingested_data:
+modeling_ingested_data:
   type: pandas.ParquetDataset
-  filepath: data/02_intermediate/ingested_data.parquet
+  filepath: data/02_intermediate/modeling_ingested_data.parquet
 
-ref_data:
+drift_ingested_data:
   type: pandas.ParquetDataset
-  filepath: data/02_intermediate/ref_data.parquet
-
-analysis_data:
-  type: pandas.ParquetDataset
-  filepath: data/02_intermediate/analysis_data.parquet
+  filepath: data/02_intermediate/drift_ingested_data.parquet
 
 # primary: data after cleaning pipeline 
 
@@ -114,8 +110,14 @@ validation_predictions:
 
 # reporting
 
-reporting_tests:
+modeling_data_reporting_tests:
   type: pandas.CSVDataset
-  filepath: data/08_reporting/data_unit_tests_report.csv
+  filepath: data/08_reporting/modeling_data_unit_tests_report.csv
+  save_args:
+    index: false
+
+drift_data_reporting_tests:
+  type: pandas.CSVDataset
+  filepath: data/08_reporting/drift_data_unit_tests_report.csv
   save_args:
     index: false

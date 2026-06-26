@@ -1,6 +1,6 @@
 # Project Plan
 
-Last updated: 2026-06-26
+Last updated: 2026-06-27
 
 ## Goal
 
@@ -84,7 +84,9 @@ Current status:
 - The validation execution section still needs to be completed visibly before extracting code into reusable modules.
 - Exact cleaning thresholds remain deferred until the prediction target and feature set are selected.
 - Notebook 2 currently prepares `tip_amount` train and validation datasets under `data/02_intermediate/` when executed.
-- Kedro `ingestion` and `data_unit_tests` pipeline folders now exist. `ingestion` only loads and enriches raw data; Great Expectations validation is centralized in `data_unit_tests`. The selected `data_unit_tests` run should include ingestion first because its validation node consumes `ingested_data` rather than raw partitions directly.
+- Kedro `ingestion` and `data_unit_tests` pipeline folders now exist. `ingestion` only loads and enriches raw data; Great Expectations validation is centralized in `data_unit_tests`. The selected `data_unit_tests` run should include ingestion first because its validation nodes consume `modeling_ingested_data` and `drift_ingested_data` rather than raw partitions directly.
+- Data-unit-test failures are report-only warnings for now. The pipeline should continue running so missingness and schema issues in the 2026 drift holdout can be discussed as monitoring findings instead of being silently removed or blocking all downstream analysis.
+- The raw Green Taxi data should stay as one partitioned source. `modeling_years` in `conf/base/parameters.yml` define the 2024-2025 period used by modeling pipelines, while `drift_years` define the 2026 holdout used only for drift/monitoring.
 - Kedro registration should keep generated starter pipelines out of the active registry/default graph so Kedro Viz and pipeline runs show only the Green Taxi project work.
 - Notebook 1 should briefly point readers from the visible notebook validation logic to these Kedro pipelines, without turning the notebook into pipeline documentation.
 
@@ -226,7 +228,8 @@ Kedro code extraction should use Week 3/4 examples only after the notebook workf
 
 | Pipeline | Purpose | Data-dependent decisions |
 |---|---|---|
-| `data_unit_tests` | Move stable Notebook 1 validation checks into a reproducible pipeline | Exact expectations and thresholds |
+| `ingestion` | Load the single raw Green Taxi partitioned source, enrich it with taxi-zone boroughs, and separate modeling data from drift holdout data by configured years | Which future months are available for drift |
+| `data_unit_tests` | Move stable Notebook 1 validation checks into a reproducible, warning-level report for modeling and drift ingested data | Which checks should later become blocking production gates |
 | `feature_engineering` | Move simple, repeated Notebook 2 transformations into reusable code | Feature list and serving availability |
 | `model_train` | Move the chosen baseline/model workflow after Notebook 3 proves it | Target, split periods, and metrics |
 | `model_predict` | Score batch or API inputs after serving schema is clear | Output schema |
