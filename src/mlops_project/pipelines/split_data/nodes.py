@@ -6,27 +6,25 @@ import pandas as pd
 logger = logging.getLogger(__name__)
 
 
-def split_by_year(ingested_data: pd.DataFrame) -> Tuple[pd.DataFrame, pd.DataFrame]:
-    """
-    Split the ingested dataset into reference (training) and analysis (batch/drift) sets.
+def split_data(df: pd.DataFrame, split_date: str) -> Tuple[pd.DataFrame, pd.DataFrame]:
+    """Split feature data into train and validation sets by pickup date."""
+    df = df.copy()
+    df["lpep_pickup_datetime"] = pd.to_datetime(df["lpep_pickup_datetime"])
 
-    - Reference: 2024 trips  → used for training the model
-    - Analysis:  2025+ trips → used for batch inference and drift monitoring
+    train_df = df[df["lpep_pickup_datetime"] < split_date].copy()
+    val_df = df[df["lpep_pickup_datetime"] >= split_date].copy()
 
-    Args:
-        ingested_data: Full combined Green Taxi DataFrame from ingestion pipeline.
+    if train_df.empty or val_df.empty:
+        raise ValueError(
+            f"Split at '{split_date}' produced an empty train or validation set — "
+            "check the date against the actual data range."
+        )
 
-    Returns:
-        ref_data: 2024 trips (reference / training set).
-        analysis_data: 2025+ trips (analysis / batch set).
-    """
-    pickup = pd.to_datetime(ingested_data["lpep_pickup_datetime"])
-    year = pickup.dt.year
+    logger.info(
+        "Split at %s -> train: %d rows (%s -> %s) | val: %d rows (%s -> %s)",
+        split_date,
+        len(train_df), train_df["lpep_pickup_datetime"].min(), train_df["lpep_pickup_datetime"].max(),
+        len(val_df), val_df["lpep_pickup_datetime"].min(), val_df["lpep_pickup_datetime"].max(),
+    )
 
-    ref_data = ingested_data[year == 2024].reset_index(drop=True)
-    analysis_data = ingested_data[year >= 2025].reset_index(drop=True)
-
-    logger.info("Reference (2024):  %d rows", len(ref_data))
-    logger.info("Analysis  (2025+): %d rows", len(analysis_data))
-
-    return ref_data, analysis_data
+    return train_df, val_df

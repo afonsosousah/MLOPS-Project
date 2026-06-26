@@ -3,9 +3,8 @@
 # Target variable
 target_column: tip_amount
 
-# Train/test split
-test_size: 0.2
-random_state: 42
+# split date
+split_date: "2025-07-01"
 
 # Data splits by years
 reference_years:
