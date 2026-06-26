@@ -30,6 +30,14 @@ analysis_data:
 
 # model_input: outputs produced by preprocessing_train
 
+train_data:
+  type: pandas.ParquetDataset
+  filepath: data/02_intermediate/train_data.parquet
+
+val_data:
+  type: pandas.ParquetDataset
+  filepath: data/02_intermediate/val_data.parquet
+
 X_train:
   type: pandas.ParquetDataset
   filepath: data/05_model_input/X_train.parquet
@@ -74,7 +82,25 @@ shap_values:
   type: pandas.ParquetDataset
   filepath: data/07_model_output/shap_values.parquet
 
-# reporting: reproducible validation and report artifacts
+production_model:
+  type: pickle.PickleDataset
+  filepath: data/06_models/production_model.pkl
+
+production_columns:
+  type: pickle.PickleDataset
+  filepath: data/06_models/columns.pkl
+
+production_model_metrics:
+  type: kedro_mlflow.io.artifacts.MlflowArtifactDataset
+  dataset:
+    type: json.JSONDataset
+    filepath: data/08_reporting/production_model_metrics.json
+
+validation_predictions:
+  type: pandas.ParquetDataset
+  filepath: data/08_reporting/validation_predictions.parquet
+
+# reporting
 
 reporting_tests:
   type: pandas.CSVDataset
