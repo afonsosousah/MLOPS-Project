@@ -34,6 +34,12 @@ cleaned_data:
   type: pandas.ParquetDataset
   filepath: data/03_primary/cleaned_data.parquet
 
+# feature: data after feature engeneering
+
+engineered_data:
+  type: pandas.ParquetDataset
+  filepath: data/04_feature/engineered_data.parquet
+
 # model_input: outputs produced by preprocessing_train
 
 train_data:
