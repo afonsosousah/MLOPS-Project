@@ -194,6 +194,7 @@ Defer until profiling:
 Use the course stack unless there is a clear compatibility problem:
 
 - `uv` for dependency management.
+- When running Python, Kedro, tests, notebooks, or other project code, use the existing uv-managed virtual environment from the project root, such as `uv run ...` or `.venv\Scripts\python.exe`, instead of creating a new environment.
 - Kedro for project structure and orchestration.
 - Great Expectations for data unit tests, or simple asserts where a lightweight check is more maintainable.
 - MLflow for experiment tracking, artifact logging, and model registry.

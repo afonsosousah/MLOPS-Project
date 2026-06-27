@@ -8,7 +8,7 @@ def create_pipeline(**kwargs) -> Pipeline:
         [
             node(
                 func=split_data,
-                inputs=["feature_store_data", "params:split_date"],
+                inputs=["modeling_selected_features_data", "params:split_date"],
                 outputs=["train_data", "val_data"],
                 name="split_data_node",
             ),

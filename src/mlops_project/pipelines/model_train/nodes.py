@@ -2,7 +2,9 @@ import logging
 from typing import Any, Dict, Tuple
 
 import mlflow
+import mlflow.sklearn as mlflow_sklearn
 import pandas as pd
+import shap
 from sklearn.compose import ColumnTransformer
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.impute import SimpleImputer
@@ -14,9 +16,13 @@ from sklearn.metrics import (
 )
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import OneHotEncoder, StandardScaler
-import shap
 
 logger = logging.getLogger(__name__)
+
+SKOPS_TRUSTED_TYPES = [
+    "numpy.dtype",
+    "pandas._libs.tslibs.timestamps.Timestamp",
+]
 
 
 def model_train(
@@ -87,7 +93,12 @@ def model_train(
                 "stage": "kedro_model_train",
             }
         )
-        mlflow.sklearn.log_model(model, name="model")
+        mlflow_sklearn.log_model(
+            model,
+            name="model",
+            serialization_format=mlflow_sklearn.SERIALIZATION_FORMAT_SKOPS,
+            skops_trusted_types=SKOPS_TRUSTED_TYPES,
+        )
 
     predictions = pd.DataFrame(
         {
@@ -98,7 +109,6 @@ def model_train(
     )
 
     logger.info("Validation RMSE: %.4f", metrics["rmse"])
-
 
     preprocessor_fitted = model.named_steps["preprocessor"]
     rf_model = model.named_steps["regressor"]

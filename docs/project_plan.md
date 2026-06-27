@@ -89,6 +89,7 @@ Current status:
 - The raw Green Taxi data should stay as one partitioned source. `modeling_years` in `conf/base/parameters.yml` define the 2024-2025 period used by modeling pipelines, while `drift_years` define the 2026 holdout used only for drift/monitoring.
 - Kedro registration should keep generated starter pipelines out of the active registry/default graph so Kedro Viz and pipeline runs show only the Green Taxi project work.
 - Notebook 1 should briefly point readers from the visible notebook validation logic to these Kedro pipelines, without turning the notebook into pipeline documentation.
+- Tests should cover the current `ingestion`, `data_unit_tests`, and `data_cleaning` pipelines with direct node checks plus small Kedro pipeline smoke tests using in-memory data.
 
 ### Sprint 3: Baseline Modeling and MLflow
 
@@ -109,7 +110,7 @@ Current status:
 
 - Notebook 3 now uses `tip_amount` regression.
 - Regression metrics should include errors such as MAE/RMSE and a fit metric such as R2.
-- MLflow model logging should use `skops` serialization with the narrow trusted type `numpy.dtype` instead of CloudPickle.
+- MLflow model logging should use `skops` serialization with the narrow trusted types `numpy.dtype` and `pandas._libs.tslibs.timestamps.Timestamp` instead of CloudPickle.
 - MLflow model logging should use `name="model"` and an explicit conda environment to avoid MLflow 3 `artifact_path` deprecation and pip version inference warnings.
 - Notebook 3 should disable MLflow environment-variable recording to avoid noisy local environment variable notices in visible outputs.
 

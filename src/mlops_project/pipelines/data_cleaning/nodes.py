@@ -6,11 +6,10 @@ import pandas as pd
 logger = logging.getLogger(__name__)
 
 
-def clean_green_taxi_data(
+def clean_data(
     ingested_data: pd.DataFrame,
     parameters: dict[str, Any],
 ) -> pd.DataFrame:
-    """Clean full Green Taxi dataset before feature engineering / Hopsworks upload."""
     n_start = len(ingested_data)
     df = ingested_data.copy()
 
@@ -38,8 +37,7 @@ def clean_green_taxi_data(
     # Credit card only: cash tips are not reliably recorded.
     df = df[df["payment_type"].eq(1)].copy()
 
-
-    #Missing Values
+    # Missing Values
     df = df.dropna(
         subset=[
             "lpep_pickup_datetime",
@@ -81,7 +79,7 @@ def clean_green_taxi_data(
     df = df.drop_duplicates().reset_index(drop=True)
 
     logger.info(
-        "Cleaned Green Taxi data: %d -> %d rows retained (%.2f%%).",
+        "Cleaned data: %d -> %d rows retained (%.2f%%).",
         n_start,
         len(df),
         len(df) / n_start * 100 if n_start else 0,

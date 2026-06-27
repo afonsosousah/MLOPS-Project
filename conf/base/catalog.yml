@@ -26,19 +26,19 @@ drift_ingested_data:
 
 # primary: data after cleaning pipeline 
 
-cleaned_data:
+modeling_cleaned_data:
   type: pandas.ParquetDataset
-  filepath: data/03_primary/cleaned_data.parquet
+  filepath: data/03_primary/modeling_cleaned_data.parquet
 
 # feature: data after feature engeneering and selection
 
-engineered_data:
+modeling_engineered_data:
   type: pandas.ParquetDataset
-  filepath: data/04_feature/engineered_data.parquet
+  filepath: data/04_feature/modeling_engineered_data.parquet
 
-feature_store_data:
+modeling_selected_features_data:
   type: pandas.ParquetDataset
-  filepath: data/04_feature/feature_store_data.parquet
+  filepath: data/04_feature/modeling_selected_features_data.parquet
 
 # model_input: outputs produced by preprocessing_train
 

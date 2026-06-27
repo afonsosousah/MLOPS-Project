@@ -3,21 +3,23 @@
 from kedro.pipeline import Pipeline
 
 from mlops_project.pipelines import (
-    data_cleaning,
-    data_unit_tests,
     ingestion,
-    preprocessing_batch,
-    preprocessing_train,
+    data_unit_tests,
+    data_cleaning,
+    feature_engineering,
+    feature_selection,
     split_data,
+    model_train,
 )
 
 ACTIVE_PIPELINE_FACTORIES = {
     "ingestion": ingestion.create_pipeline,
     "data_unit_tests": data_unit_tests.create_pipeline,
     "data_cleaning": data_cleaning.create_pipeline,
+    "feature_engineering": feature_engineering.create_pipeline,
+    "feature_selection": feature_selection.create_pipeline,
     "split_data": split_data.create_pipeline,
-    "preprocessing_train": preprocessing_train.create_pipeline,
-    "preprocessing_batch": preprocessing_batch.create_pipeline,
+    "model_train": model_train.create_pipeline,
 }
 
 

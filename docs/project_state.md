@@ -78,7 +78,7 @@ Notebook 1 uses this validation split:
 
 Notebook 2 work currently appears in `notebooks/02_data_preprocessing.ipynb`. It prepares Green Taxi modeling features and saves intermediate train/analysis datasets under `data/02_intermediate/` when executed.
 
-Notebook 3 has been started as `notebooks/03_experiment_tracking_and_modeling.ipynb`. It is aligned with Week 2 practical material and now focuses on MLflow experiment tracking, baseline regression models, model comparison, and a small Optuna tuning run for the `tip_amount` target. MLflow sklearn model artifacts should use the safer `skops` serialization format with `numpy.dtype` explicitly trusted for the current sklearn pipelines. Model logging should use MLflow 3's `name="model"` argument and an explicit conda environment so the notebook does not emit `artifact_path` deprecation or pip version inference warnings. Disable MLflow environment-variable recording in this notebook so local variable names are not written into model logging output.
+Notebook 3 has been started as `notebooks/03_experiment_tracking_and_modeling.ipynb`. It is aligned with Week 2 practical material and now focuses on MLflow experiment tracking, baseline regression models, model comparison, and a small Optuna tuning run for the `tip_amount` target. MLflow sklearn model artifacts should use the safer `skops` serialization format with `numpy.dtype` and `pandas._libs.tslibs.timestamps.Timestamp` explicitly trusted for the current sklearn pipelines. Model logging should use MLflow 3's `name="model"` argument and an explicit conda environment so the notebook does not emit `artifact_path` deprecation or pip version inference warnings. Disable MLflow environment-variable recording in this notebook so local variable names are not written into model logging output.
 
 ## Current Kedro Pipeline Work
 
@@ -90,6 +90,8 @@ Notebook 3 has been started as `notebooks/03_experiment_tracking_and_modeling.ip
 - Kedro registry output should exclude the generated starter/example pipelines (`example_data_processing`, `example_data_science`, and the starter `reporting` pipeline). They use toy Spaceflights datasets and can collide with Green Taxi outputs such as `X_train`, `X_test`, `y_train`, and `y_test`.
 - `src/mlops_project/pipeline_registry.py` should explicitly register only active Green Taxi pipelines instead of auto-discovering every folder under `src/mlops_project/pipelines/`.
 - `conf/base/catalog.yml` should describe the active Green Taxi datasets only: raw partitions, zone lookup, intermediate split data, model-input splits, fitted preprocessing/model artifacts, batch outputs, explainability artifacts, and validation reports.
+- Tests now cover the `ingestion`, `data_unit_tests`, and `data_cleaning` pipelines with small in-memory pandas data. Ingestion node and pipeline coverage live together in `tests/pipelines/ingestion/test_pipeline.py`.
+- The Kedro `model_train` node should log sklearn artifacts with MLflow's `skops` serialization format and explicitly trusted `numpy.dtype` and `pandas._libs.tslibs.timestamps.Timestamp` types, matching the data types found during the current pipeline run.
 
 ## Current Files Present
 
