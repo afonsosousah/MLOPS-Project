@@ -114,6 +114,12 @@ validation_predictions:
 
 # reporting
 
+drift_report:
+  type: pandas.CSVDataset
+  filepath: data/08_reporting/drift_report.csv
+  save_args:
+    index: false
+
 modeling_data_reporting_tests:
   type: pandas.CSVDataset
   filepath: data/08_reporting/modeling_data_unit_tests_report.csv

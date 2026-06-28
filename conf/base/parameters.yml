@@ -1,8 +1,5 @@
 # Shared parameters used across all pipelines.
 
-# Target variable
-target_column: tip_amount
-
 # split date
 split_date: "2025-07-01"
 

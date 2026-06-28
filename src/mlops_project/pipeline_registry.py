@@ -10,6 +10,8 @@ from mlops_project.pipelines import (
     feature_selection,
     split_data,
     model_train,
+    model_predict,
+    data_drift,
 )
 
 ACTIVE_PIPELINE_FACTORIES = {
@@ -20,6 +22,8 @@ ACTIVE_PIPELINE_FACTORIES = {
     "feature_selection": feature_selection.create_pipeline,
     "split_data": split_data.create_pipeline,
     "model_train": model_train.create_pipeline,
+    "model_predict": model_predict.create_pipeline,
+    "data_drift": data_drift.create_pipeline,
 }
 
 
@@ -40,14 +44,6 @@ def register_pipelines() -> dict[str, Pipeline]:
         pipelines["data_unit_tests"] = (
             active_pipelines["ingestion"]
             + active_pipelines["data_unit_tests"]
-        )
-
-    # Full data preparation chain: ingest → split → preprocess (produces model inputs)
-    if {"ingestion", "split_data", "preprocessing_train"}.issubset(active_pipelines):
-        pipelines["data_prep"] = (
-            active_pipelines["ingestion"]
-            + active_pipelines["split_data"]
-            + active_pipelines["preprocessing_train"]
         )
 
     pipelines["__default__"] = sum(active_pipelines.values(), Pipeline([]))
