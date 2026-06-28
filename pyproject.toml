@@ -1,5 +1,5 @@
 [build-system]
-requires = ["setuptools"]
+requires = ["setuptools==80.9.0"]
 build-backend = "setuptools.build_meta"
 
 [project]
@@ -74,6 +74,16 @@ source_dir = "src"
 addopts = """
 --cov-report term-missing \
 --cov src/mlops_project -ra"""
+testpaths = ["tests"]
+norecursedirs = [
+    ".git",
+    ".venv",
+    "class_materials",
+    "data",
+    "docs",
+    "gx_project",
+    "notebooks",
+]
 
 [tool.coverage.report]
 fail_under = 0

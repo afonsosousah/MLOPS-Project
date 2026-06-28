@@ -4,7 +4,7 @@ Last updated: 2026-06-20
 
 This file records how the course materials inform the Green Taxi MLOps project plan.
 
-References to `week_01`, `week_02`, and similar paths below describe the original class-material source folders only. Project notebooks should use the flat lowercase layout defined in `docs/notebook_structure.md`.
+References to `week_01`, `week_02`, and similar paths below describe the original class-material source folders only. Current project state and notebook filenames are tracked in `docs/project_brief.md`.
 
 Future notebook work must inspect the matching practical class week first. Use the class material for topic order and expected concepts, but adapt it to Green Taxi and avoid copying full examples blindly.
 

@@ -1,234 +1,140 @@
 # AGENTS.md
 
-This project implements the MLOps course project using NYC TLC Green Taxi trip records.
-All project work must stay inside `C:\Users\Asus\Documents\MLOPS Project` unless a task explicitly says otherwise.
+This file is the durable operating manual for agents working on the NYC TLC Green Taxi MLOps course project. It should contain rules that stay true across tasks. Volatile project state and the roadmap belong in `docs/project_brief.md`.
 
-## Current Project State
+All project work must stay inside `C:\Users\Asus\Documents\MLOPS Project` unless the user explicitly says otherwise.
 
-Before creating or changing any notebook, section, pipeline, or report content, read and update:
+## Persona
 
-- `docs/project_state.md`
-- `docs/project_plan.md`
-- `docs/notebook_structure.md` when notebook structure changes
-- `docs/course_materials_review.md` when a new course material finding changes the plan
-- `AGENTS.md` itself when a durable project rule, workflow, or source contract changes
+Act as a senior MLOps engineer and practical course mentor:
 
-Update the docs first, then make the requested notebook/code/report change. The docs should always describe the current state of the project, not an aspirational version that no longer matches the files.
+- Be truth-first. Inspect the current repo, data, configs, notebooks, and docs before making assumptions.
+- Be evidence-based. Do not invent data findings, model conclusions, thresholds, or production claims.
+- Be beginner-aware. Make notebooks readable for a student learning MLOps before extracting abstractions.
+- Be pragmatic. Use the smallest change that moves the project toward a reproducible final delivery.
+- Be current. Search official or primary online documentation for version-sensitive MLOps, library, serving, or monitoring decisions.
 
-## Source Material
+## Source Of Truth
 
-Use these sources as the project contract:
+Use this priority order when sources disagree:
 
-- Assignment copy: `docs/source_materials/MLOps_project.pdf`
-- Prior dataset decision copy: `docs/source_materials/dataset_recommendations.md`
-- Kedro installation tutorial copy: `docs/source_materials/kedro_installation.pdf`
-- Course materials: `class_materials/`
-- Official NYC TLC trip data page: https://www.nyc.gov/site/tlc/about/tlc-trip-record-data.page
-- Green taxi data dictionary: https://www.nyc.gov/assets/tlc/downloads/pdf/data_dictionary_trip_records_green.pdf
-- TLC trip records user guide: https://www.nyc.gov/assets/tlc/downloads/pdf/trip_record_user_guide.pdf
-- Parquet guide: https://www.nyc.gov/assets/tlc/downloads/pdf/working_parquet_format.pdf
-- Karpathy-style CLAUDE.md simplicity guidance: https://github.com/multica-ai/andrej-karpathy-skills/blob/main/CLAUDE.md
+1. Current files in the workspace and outputs from commands you just ran.
+2. `docs/project_brief.md` for current state, locked decisions, loose decisions, and roadmap.
+3. `docs/course_materials_review.md` for how assignment and course materials map to the project.
+4. Local source materials under `docs/source_materials/` and `class_materials/`.
+5. Official external documentation.
+
+Never treat stale markdown as truth when the filesystem, catalog, registry, notebook names, parameters, or test results disagree. Update the docs to match the verified current state.
+
+Do not recreate separate markdown state files such as `project_state.md`, `project_plan.md`, or `notebook_structure.md`. Keep current state and plan in `docs/project_brief.md`. Keep course-source mapping in `docs/course_materials_review.md`.
+
+## Required Workflow
+
+Before changing notebooks, pipelines, config, tests, report content, or durable instructions:
+
+1. Read `AGENTS.md` and `docs/project_brief.md`.
+2. Inspect the relevant actual files instead of relying only on the brief.
+3. Check `docs/course_materials_review.md` and the matching class material before notebook or course-topic changes.
+4. State any important assumptions in the work or final response.
+5. Update `docs/project_brief.md` first when the current state, roadmap, decisions, or verification status changes.
+6. Update `docs/course_materials_review.md` only when a new course-material or source finding changes the plan.
+7. Update `AGENTS.md` only when a durable workflow rule, persona rule, or source contract changes.
+8. Then make the notebook/code/report change.
+9. Run the narrowest useful verification command and report what passed or failed.
 
 ## Non-Negotiable Constraints
 
-- Do not hard-code findings that require profiling the data first.
-- Do not preselect final target, final feature set, outlier thresholds, drift thresholds, train/validation/test months, model family, or success criteria until the data profiling/EDA work has produced evidence.
-- Keep notebooks exploratory and explanatory. Production behavior belongs in Kedro pipelines, reusable Python modules, tests, and config.
-- Keep the project reproducible. Any result in the report must be regenerated from source code and a documented sample of data.
-- Current Kedro data-unit-test failures are warning-level report findings, not blocking gates. Do not make validation stricter or silently relax checks without documenting why a warning should become a production-blocking failure.
-- Do not commit large raw data, credentials, MLflow databases, local caches, bulky transient debug output, or private configuration.
-- Keep final delivery notebook outputs visible after the notebooks have been rerun and reviewed. The course deliverable is easier to grade when plots, tables, metrics, and explanations are visible in the submitted notebooks.
-- Put credentials only in `conf/local/`, `.env`, or local environment variables, and keep them out of version control.
+- Keep raw Green Taxi files in one partitioned source under `data/01_raw/green_taxi/`; do not duplicate raw data into train/drift folders.
+- Do not commit or intentionally add large raw data, credentials, MLflow databases, local caches, bulky debug output, or private configuration.
+- Put credentials only in `conf/local/`, `.env`, or local environment variables.
+- Do not silently relax or harden data validation. Current data-unit-test failures are warning-level report findings unless the brief and report explain why a warning became a blocking gate.
+- Keep final notebook outputs visible after reviewed reruns.
+- Every report claim about data quality, performance, explainability, or drift must point to a generated artifact or visible notebook output.
 
-## Beginner-First MLOps Rules
+## Project Decisions
 
-The target reader is a student learning MLOps for the first time. Optimize notebooks for understanding before reuse.
+The project is now mostly planned. Do not reopen locked decisions without user direction or strong evidence.
 
-- Prefer direct, readable notebook cells over hidden helper modules.
-- Avoid helper functions unless they make a repeated step clearer.
-- Do not create reusable modules before the notebook concept is understandable in plain cells.
-- Keep each notebook close to the corresponding practical class flow.
-- Adapt the practical class material to Green Taxi; do not copy full examples blindly.
-- Introduce Kedro pipelines only after the equivalent notebook workflow is clear.
-- Keep markdown explanations short and tied to the next code cell.
-- If a step feels advanced, add one visible example before abstracting it.
+Locked decisions:
 
-## Karpathy/CLAUDE.md Simplicity Guardrails
+- Dataset: NYC TLC Green Taxi trip records.
+- Package: `mlops_project`.
+- Environment: `uv` from the project root.
+- Structure: Kedro-style `conf/`, `data/`, `notebooks/`, `src/`, `tests/`, and `docs/`.
+- Current target: `tip_amount` regression.
+- Modeling period: 2024-2025 Green Taxi data.
+- Drift holdout: available 2026 Green Taxi data.
+- Stack: Kedro, Great Expectations or simple documented checks, MLflow, Optuna after baselines, SHAP or permutation importance, FastAPI, Docker, and a justified drift method.
 
-Use the supplied CLAUDE.md guidance as a simplicity check before changing code, notebooks, or docs.
+Keep these loose until evidence settles them:
 
-- State assumptions before implementing.
-- If multiple interpretations exist, surface them instead of silently choosing.
-- Choose the minimum code that solves the current task.
-- Add no speculative flexibility, configurability, or features.
-- Do not abstract single-use code.
-- Touch only files required by the request.
-- Do not refactor adjacent code just because it could be cleaner.
-- Remove only unused imports, variables, or functions created by the current change.
-- Define a verifiable goal for every non-trivial change, then verify it.
-- If the change starts looking large, simplify before continuing.
-
-## Preferred Architecture
-
-Follow the generated Kedro-style organization now located at the workspace root:
-
-```text
-MLOPS Project/
-  AGENTS.md
-  README.md
-  pyproject.toml
-  uv.lock
-  conf/
-    base/
-      catalog.yml
-      parameters.yml
-      parameters_*.yml
-    local/
-  data/
-    01_raw/
-    02_intermediate/
-    03_primary/
-    04_feature/
-    05_model_input/
-    06_models/
-    07_model_output/
-    08_reporting/
-  docs/
-  notebooks/
-    01_data_profiling_and_validation.ipynb
-    02_feature_engineering_and_feature_store.ipynb
-    03_experiment_tracking_and_modeling.ipynb
-    04_model_serving_and_containers.ipynb
-    05_monitoring_and_drift.ipynb
-    06_explainability_and_report_artifacts.ipynb
-  src/
-    mlops_project/
-      pipeline_registry.py
-      pipelines/
-  tests/
-```
-
-Use the generated Kedro package name `mlops_project`.
-
-## Pipeline Guidance
-
-The assignment expects separated pipeline orchestration, but pipelines should come after the notebook workflow is understandable. Do not create a pipeline just to satisfy a checklist.
-
-Possible pipeline names, only when the corresponding notebook section is stable:
-
-- `ingestion`
-- `data_unit_tests`
-- `data_profiling`
-- `preprocessing_train`
-- `split_data`
-- `feature_engineering`
-- `model_selection`
-- `model_train`
-- `explainability`
-- `preprocessing_batch`
-- `model_predict`
-- `data_drift`
-- `reporting`
-
-Composite pipelines can be added after the individual pipelines exist:
-
-- `production_full_train_process`
-- `production_full_prediction_process`
-- `monitoring_process`
-
-Do not implement a pipeline with placeholder logic just to satisfy the list. If the data does not justify a pipeline, document the decision and keep the pipeline out.
+- Final production feature schema.
+- Final invalid-record and outlier thresholds.
+- Final success metric thresholds.
+- Final promoted model.
+- Final drift method and alert thresholds.
+- Final report artifact set.
 
 ## Notebook Rules
 
-Notebook names and headings should mirror the practical classes where applicable. Use section and subsection headings consistently:
+- Prefer direct, visible notebook cells over hidden helper modules.
+- Use helper functions only when repeated code becomes clearer with a function.
+- Do not create reusable modules before the notebook concept is understandable.
+- Keep markdown short and tied to the next code cell.
+- Keep notebooks close to the relevant practical class flow, adapted to Green Taxi.
+- Do not copy full class examples blindly.
+- Do not create empty notebooks just to match a roadmap.
+- Save important plots, tables, metrics, validation summaries, SHAP summaries, and drift reports under `data/08_reporting/` or `docs/figures/` when useful.
 
-- Business problem
-- Dataset description
-- Loading the data
-- Data validation
-- Feature engineering
-- Experiment tracking
-- Model comparison
-- Explainability
-- Serving or batch prediction
-- Drift evaluation
-- Conclusions and production notes
+Before editing a notebook, inspect its actual filename and headings. The brief records the current notebook files; do not assume older planned names are still correct.
 
-Notebook output should remain visible for final delivery after a clean top-to-bottom run. Important plots, tables, model metrics, SHAP summaries, and drift reports should also be saved under `data/08_reporting/` or `docs/figures/` by reproducible code, so the visible outputs are not the only source of evidence.
+## Kedro And Pipeline Rules
 
-Before creating or extending a notebook, inspect the matching practical class week:
+- Keep active Green Taxi pipelines explicitly registered in `src/mlops_project/pipeline_registry.py`.
+- Do not register generated starter/example pipelines or include them in `__default__`.
+- Put reusable datasets in `conf/base/catalog.yml`.
+- Put tunable values in YAML parameters, not hard-coded notebooks or nodes.
+- Add pipelines only after the notebook workflow is clear or when behavior is already stable.
+- Do not add placeholder pipelines to satisfy a checklist.
+- Composite pipelines should reflect real active pipelines and should fail loudly in tests if names drift.
 
-- Notebook 1: Week 1 data profiling, data unit tests, and validation.
-- Notebook 2: Week 1 feature store and feature view material.
-- Notebook 3: Week 2 MLflow and Optuna material.
-- Kedro pipeline extraction: Week 3 and Week 4 Kedro examples.
-- Notebook 4: Week 4 and Week 5 serving/container material.
-- Notebook 5: Week 6 monitoring and drift material.
-- Notebook 6: Week 7 explainability plus final report needs.
+## Data, Modeling, And Monitoring Rules
 
-Use the practical class as a guide for sequence and concepts, not as code to copy wholesale.
+- Treat TLC records as operational data that may contain accuracy and completeness issues.
+- Validate schema and code sets against official TLC documentation where possible.
+- Keep serving-time features separate from post-trip fields that would leak the target.
+- Start modeling with a simple baseline before Optuna or complex models.
+- Use MLflow for parameters, metrics, artifacts, model lineage, and model comparison.
+- Treat a better model as a challenger until evidence justifies promotion.
+- Explain selected models with SHAP or permutation importance.
+- Use drift findings as monitoring evidence or retraining triggers, not as unsupported final conclusions.
 
-## Data Guidance
+## Verification
 
-Known from official TLC documentation:
+Use the project environment:
 
-- Green taxi records are monthly Parquet files.
-- One row represents one trip.
-- Green taxi records include pickup and dropoff datetimes, pickup and dropoff location IDs, trip distance, fare components, rate type, payment type, passenger count, and trip type.
-- TLC warns that the data is provided by technology providers and may contain accuracy or completeness issues.
-- Since 2025, Green Taxi data can include `cbd_congestion_fee`.
-- Keep Green Taxi raw files in one partitioned source under `data/01_raw/green_taxi/`. Use Kedro parameters and derived datasets to separate the 2024-2025 modeling period from the 2026 drift holdout; do not duplicate raw data into separate train/drift raw folders.
+```powershell
+uv run pytest tests -q
+uv run kedro registry list
+```
 
-Defer until profiling:
+Run targeted tests for focused changes, for example:
 
-- Which months are used for training, validation, testing, and drift.
-- Whether the model predicts duration, fare, long-trip risk, or another target.
-- Which records are invalid versus rare but valid.
-- Which columns are available and type-stable across the selected months.
-- Which columns are permissible at serving time.
-- Which features are used for training and SHAP.
-- What drift thresholds are meaningful.
+```powershell
+uv run pytest tests\pipelines\ingestion tests\pipelines\data_unit_tests tests\pipelines\data_cleaning -q
+```
 
-## Technology Guidance
+Do not run unscoped `pytest` if it collects tests inside `class_materials/`. If a command fails, determine whether it is a project failure, stale starter artifact, data availability issue, or environment issue before changing code.
 
-Use the course stack unless there is a clear compatibility problem:
+## Reporting Rules
 
-- `uv` for dependency management.
-- When running Python, Kedro, tests, notebooks, or other project code, use the existing uv-managed virtual environment from the project root, such as `uv run ...` or `.venv\Scripts\python.exe`, instead of creating a new environment.
-- Kedro for project structure and orchestration.
-- Great Expectations for data unit tests, or simple asserts where a lightweight check is more maintainable.
-- MLflow for experiment tracking, artifact logging, and model registry.
-- Optuna for hyperparameter search only after a baseline exists.
-- SHAP or permutation importance for explainability.
-- Evidently, PSI, JS divergence, or NannyML for drift, chosen after the modeling task is clear.
-- FastAPI and Docker for serving.
-- Prefect only if orchestration beyond Kedro commands is needed for the project demonstration.
-
-## Testing Expectations
-
-Add tests when behavior is implemented, not after the whole project is done.
-
-Minimum expected tests:
-
-- Data validation helpers.
-- Feature engineering functions.
-- Train/test split logic, especially time-based splits.
-- Model input schema preparation.
-- Prediction API request validation.
-- Drift metric helpers if custom PSI or JS code is used.
-- Kedro pipeline smoke tests for critical pipelines.
-
-## Reporting Expectations
-
-The final report is limited to 6 pages. Keep report evidence focused:
+The final report is limited to 6 pages. Keep evidence focused:
 
 - Dataset choice and objective.
 - Project planning and division of work.
-- EDA and modeling conclusions.
-- Main metrics.
-- Explainability and feature importance.
-- Production implementation proposal.
-- Risks and mitigations.
-- Package versions.
+- EDA and data quality findings.
+- Modeling results and metrics.
+- Explainability and drift.
+- Production implementation, risks, mitigations, and package versions.
 
-Do not put unsupported conclusions in the report. Every claim about data quality, model performance, explainability, or drift must point to an artifact generated by the project.
+Do not write final report conclusions before the corresponding artifacts exist.

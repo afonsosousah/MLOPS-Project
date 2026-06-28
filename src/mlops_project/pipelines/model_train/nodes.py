@@ -3,6 +3,7 @@ from typing import Any, Dict, Tuple
 
 import mlflow
 import mlflow.sklearn as mlflow_sklearn
+import numpy as np
 import pandas as pd
 import shap
 from sklearn.compose import ColumnTransformer
@@ -19,10 +20,8 @@ from sklearn.preprocessing import OneHotEncoder, StandardScaler
 
 logger = logging.getLogger(__name__)
 
-SKOPS_TRUSTED_TYPES = [
-    "numpy.dtype",
-    "pandas._libs.tslibs.timestamps.Timestamp",
-]
+MLFLOW_MODEL_SERIALIZATION_FORMAT = mlflow_sklearn.SERIALIZATION_FORMAT_CLOUDPICKLE
+DEFAULT_SHAP_SAMPLE_SIZE = 25
 
 
 def model_train(
@@ -68,7 +67,7 @@ def model_train(
             ("regressor", RandomForestRegressor(**model_params)),
         ]
     )
-    
+
     mlflow.set_tracking_uri(parameters["mlflow_tracking_uri"])
     mlflow.set_experiment(parameters["mlflow_experiment_name"])
 
@@ -91,13 +90,13 @@ def model_train(
                 "target": target_col,
                 "task": "regression",
                 "stage": "kedro_model_train",
+                "model_serialization_format": MLFLOW_MODEL_SERIALIZATION_FORMAT,
             }
         )
         mlflow_sklearn.log_model(
             model,
             name="model",
-            serialization_format=mlflow_sklearn.SERIALIZATION_FORMAT_SKOPS,
-            skops_trusted_types=SKOPS_TRUSTED_TYPES,
+            serialization_format=MLFLOW_MODEL_SERIALIZATION_FORMAT,
         )
 
     predictions = pd.DataFrame(
@@ -113,12 +112,20 @@ def model_train(
     preprocessor_fitted = model.named_steps["preprocessor"]
     rf_model = model.named_steps["regressor"]
 
-    X_train_transformed = preprocessor_fitted.transform(X_train)
+    shap_sample_size = int(parameters.get("shap_sample_size", DEFAULT_SHAP_SAMPLE_SIZE))
+    X_shap = X_train.sample(
+        n=min(shap_sample_size, len(X_train)),
+        random_state=model_params.get("random_state", 42),
+    )
+    X_shap_transformed = preprocessor_fitted.transform(X_shap)
+    if hasattr(X_shap_transformed, "toarray"):
+        X_shap_transformed = X_shap_transformed.toarray()
+    X_shap_transformed = np.asarray(X_shap_transformed, dtype=float)
 
     explainer = shap.TreeExplainer(rf_model)
-    shap_values = explainer.shap_values(X_train_transformed)
-    
-    shap.summary_plot(shap_values, X_train_transformed, show=False)
+    shap_values = explainer.shap_values(X_shap_transformed)
+
+    shap.summary_plot(shap_values, X_shap_transformed, show=False, max_display=20)
 
     return model, X_train.columns.tolist(), metrics, predictions
 

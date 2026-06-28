@@ -3,13 +3,13 @@
 from kedro.pipeline import Pipeline
 
 from mlops_project.pipelines import (
-    ingestion,
-    data_unit_tests,
     data_cleaning,
+    data_unit_tests,
     feature_engineering,
     feature_selection,
-    split_data,
+    ingestion,
     model_train,
+    split_data,
 )
 
 ACTIVE_PIPELINE_FACTORIES = {
@@ -24,31 +24,34 @@ ACTIVE_PIPELINE_FACTORIES = {
 
 
 def register_pipelines() -> dict[str, Pipeline]:
-    """Register the project's pipelines.
-
-    Returns:
-        A mapping from pipeline names to ``Pipeline`` objects.
-    """
+    """Register the Green Taxi project pipelines."""
     active_pipelines = {
         name: create_pipeline()
         for name, create_pipeline in ACTIVE_PIPELINE_FACTORIES.items()
     }
     pipelines = active_pipelines.copy()
 
-    # data_unit_tests runs ingestion first so the validation node has its input
+    # data_unit_tests runs ingestion first so validation nodes have inputs.
     if {"ingestion", "data_unit_tests"}.issubset(active_pipelines):
         pipelines["data_unit_tests"] = (
-            active_pipelines["ingestion"]
-            + active_pipelines["data_unit_tests"]
+            active_pipelines["ingestion"] + active_pipelines["data_unit_tests"]
         )
 
-    # Full data preparation chain: ingest → split → preprocess (produces model inputs)
-    if {"ingestion", "split_data", "preprocessing_train"}.issubset(active_pipelines):
-        pipelines["data_prep"] = (
-            active_pipelines["ingestion"]
-            + active_pipelines["split_data"]
-            + active_pipelines["preprocessing_train"]
+    data_prep_steps = [
+        "ingestion",
+        "data_cleaning",
+        "feature_engineering",
+        "feature_selection",
+        "split_data",
+    ]
+    if set(data_prep_steps).issubset(active_pipelines):
+        pipelines["data_prep"] = sum(
+            (active_pipelines[name] for name in data_prep_steps),
+            Pipeline([]),
         )
+
+    if {"data_prep", "model_train"}.issubset(pipelines):
+        pipelines["training"] = pipelines["data_prep"] + active_pipelines["model_train"]
 
     pipelines["__default__"] = sum(active_pipelines.values(), Pipeline([]))
     return pipelines

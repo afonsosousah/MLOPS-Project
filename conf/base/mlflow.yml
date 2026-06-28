@@ -1,0 +1,36 @@
+# Kedro-MLflow hook configuration.
+# Keep this aligned with the project MLflow parameters in `parameters.yml`.
+
+server:
+  mlflow_tracking_uri: sqlite:///mlflow.db
+  mlflow_registry_uri: sqlite:///mlflow.db
+  credentials: null
+  request_header_provider:
+    type: null
+    pass_context: false
+    init_kwargs: {}
+
+tracking:
+  disable_tracking:
+    disable_autologging: true
+    pipelines: []
+  experiment:
+    name: green_taxi_tip_amount
+    create_experiment_kwargs:
+      artifact_location: null
+      tags: null
+    restore_if_deleted: true
+  run:
+    id: null
+    name: null
+    nested: true
+  params:
+    dict_params:
+      flatten: false
+      recursive: true
+      sep: "."
+    long_params_strategy: fail
+
+ui:
+  port: "5000"
+  host: "127.0.0.1"
