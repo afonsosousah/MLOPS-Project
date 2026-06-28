@@ -8,7 +8,7 @@ def create_pipeline(**kwargs) -> Pipeline:
         [
             node(
                 func=model_train,
-                inputs=["train_data", "val_data", "parameters"],
+                inputs=["train_data", "val_data", "best_model_params", "parameters"],
                 outputs=[
                     "production_model",
                     "production_columns",

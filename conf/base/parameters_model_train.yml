@@ -1,5 +1,7 @@
 target_col: tip_amount
 
+optuna_n_trials: 20
+
 model_params:
   n_estimators: 120
   max_depth: 16

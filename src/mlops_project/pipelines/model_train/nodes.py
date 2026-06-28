@@ -28,6 +28,7 @@ SKOPS_TRUSTED_TYPES = [
 def model_train(
     train_data: pd.DataFrame,
     val_data: pd.DataFrame,
+    best_model_params: Dict[str, Any],
     parameters: Dict[str, Any],
 ) -> Tuple[Pipeline, list[str], Dict[str, float], pd.DataFrame]:
     target_col = parameters["target_col"]
@@ -60,7 +61,7 @@ def model_train(
         ]
     )
 
-    model_params = parameters["model_params"]
+    model_params = best_model_params
 
     model = Pipeline(
         steps=[

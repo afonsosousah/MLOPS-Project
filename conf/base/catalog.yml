@@ -114,6 +114,10 @@ validation_predictions:
 
 # reporting
 
+best_model_params:
+  type: json.JSONDataset
+  filepath: data/06_models/best_model_params.json
+
 drift_report:
   type: pandas.CSVDataset
   filepath: data/08_reporting/drift_report.csv
