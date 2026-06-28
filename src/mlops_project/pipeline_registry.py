@@ -10,6 +10,8 @@ from mlops_project.pipelines import (
     ingestion,
     model_train,
     split_data,
+    model_predict,
+    data_drift,
 )
 
 ACTIVE_PIPELINE_FACTORIES = {
@@ -20,6 +22,8 @@ ACTIVE_PIPELINE_FACTORIES = {
     "feature_selection": feature_selection.create_pipeline,
     "split_data": split_data.create_pipeline,
     "model_train": model_train.create_pipeline,
+    "model_predict": model_predict.create_pipeline,
+    "data_drift": data_drift.create_pipeline,
 }
 
 
