@@ -2,14 +2,23 @@ import logging
 
 import great_expectations as gx
 import pandas as pd
+from great_expectations.expectations.core.expect_column_pair_values_a_to_be_greater_than_b import (
+    ExpectColumnPairValuesAToBeGreaterThanB,
+)
+from great_expectations.expectations.core.expect_column_values_to_be_between import (
+    ExpectColumnValuesToBeBetween,
+)
+from great_expectations.expectations.core.expect_column_values_to_be_in_set import (
+    ExpectColumnValuesToBeInSet,
+)
+from great_expectations.expectations.core.expect_column_values_to_not_be_null import (
+    ExpectColumnValuesToNotBeNull,
+)
+from great_expectations.expectations.core.expect_table_columns_to_match_set import (
+    ExpectTableColumnsToMatchSet,
+)
 
-from great_expectations.expectations.core.expect_column_pair_values_a_to_be_greater_than_b import ExpectColumnPairValuesAToBeGreaterThanB
-from great_expectations.expectations.core.expect_column_values_to_be_between import ExpectColumnValuesToBeBetween
-from great_expectations.expectations.core.expect_column_values_to_be_in_set import ExpectColumnValuesToBeInSet
-from great_expectations.expectations.core.expect_column_values_to_not_be_null import ExpectColumnValuesToNotBeNull
-from great_expectations.expectations.core.expect_table_columns_to_match_set import ExpectTableColumnsToMatchSet
-
-from .utils import _parse_results, _add_if_present
+from .utils import _add_if_present, _parse_results
 
 logger = logging.getLogger(__name__)
 
@@ -80,20 +89,24 @@ def _build_suite(ingested_data: pd.DataFrame) -> gx.ExpectationSuite:
             suite,
             ingested_data,
             column,
-            ExpectColumnValuesToNotBeNull(column=column)
+            ExpectColumnValuesToNotBeNull(column=column),
         )
 
     _add_if_present(
         suite,
         ingested_data,
         "PULocationID",
-        ExpectColumnValuesToBeBetween(column="PULocationID", min_value=1, max_value=265),
+        ExpectColumnValuesToBeBetween(
+            column="PULocationID", min_value=1, max_value=265
+        ),
     )
     _add_if_present(
         suite,
         ingested_data,
         "DOLocationID",
-        ExpectColumnValuesToBeBetween(column="DOLocationID", min_value=1, max_value=265),
+        ExpectColumnValuesToBeBetween(
+            column="DOLocationID", min_value=1, max_value=265
+        ),
     )
 
     for column in CODE_COMPLETENESS_COLUMNS:
@@ -119,7 +132,9 @@ def _build_suite(ingested_data: pd.DataFrame) -> gx.ExpectationSuite:
             ),
         )
 
-    if {"lpep_dropoff_datetime", "lpep_pickup_datetime"}.issubset(ingested_data.columns):
+    if {"lpep_dropoff_datetime", "lpep_pickup_datetime"}.issubset(
+        ingested_data.columns
+    ):
         suite.add_expectation(
             ExpectColumnPairValuesAToBeGreaterThanB(
                 column_A="lpep_dropoff_datetime",

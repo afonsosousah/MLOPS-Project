@@ -1,0 +1,21 @@
+feature_store:
+  enabled: false
+  feature_group_name: green_taxi_features
+  feature_group_version: 1
+  description: Green Taxi engineered features (2024-2025)
+  primary_key:
+    - trip_id
+  event_time: lpep_pickup_datetime
+  online_enabled: false
+  time_travel_format: HUDI
+  overwrite: true
+  storage: offline
+  wait_for_job: true
+  compute_statistics: true
+  statistics_config:
+    enabled: true
+    histograms: true
+    correlations: true
+  credential_env_vars:
+    api_key: FS_API_KEY
+    project_name: FS_PROJECT_NAME

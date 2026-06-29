@@ -5,7 +5,6 @@ from kedro.runner import SequentialRunner
 from mlops_project.pipelines.data_unit_tests import create_pipeline
 from mlops_project.pipelines.data_unit_tests.nodes import unit_test
 
-
 EXPECTED_REPORT_COLUMNS = [
     "success",
     "severity",
@@ -69,23 +68,23 @@ def test_unit_test_reports_warnings_without_raising() -> None:
 
     assert report.columns.tolist() == EXPECTED_REPORT_COLUMNS
     assert (report["severity"] == "warning").any()
-    assert (report["success"] == False).any()
+    assert (~report["success"]).any()
 
 
 def test_data_unit_tests_pipeline_creates_modeling_and_drift_reports() -> None:
     catalog = DataCatalog(
         {
-            "modeling_ingested_data": MemoryDataset(data=_valid_green_taxi_data()),
+            "ingested_data": MemoryDataset(data=_valid_green_taxi_data()),
             "drift_ingested_data": MemoryDataset(data=_valid_green_taxi_data()),
-            "modeling_data_reporting_tests": MemoryDataset(),
-            "drift_data_reporting_tests": MemoryDataset(),
+            "reporting_tests": MemoryDataset(),
+            "drift_reporting_tests": MemoryDataset(),
         }
     )
 
     SequentialRunner().run(create_pipeline(), catalog)
 
-    modeling_report = catalog.load("modeling_data_reporting_tests")
-    drift_report = catalog.load("drift_data_reporting_tests")
+    modeling_report = catalog.load("reporting_tests")
+    drift_report = catalog.load("drift_reporting_tests")
 
     assert modeling_report.columns.tolist() == EXPECTED_REPORT_COLUMNS
     assert drift_report.columns.tolist() == EXPECTED_REPORT_COLUMNS

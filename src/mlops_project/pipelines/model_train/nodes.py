@@ -1,95 +1,117 @@
 import logging
-from typing import Any, Dict, Tuple
+from typing import Any
 
+import matplotlib.pyplot as plt
 import mlflow
 import mlflow.sklearn as mlflow_sklearn
 import numpy as np
 import pandas as pd
-import shap
-from sklearn.compose import ColumnTransformer
 from sklearn.ensemble import RandomForestRegressor
-from sklearn.impute import SimpleImputer
 from sklearn.metrics import (
     mean_absolute_error,
     median_absolute_error,
     r2_score,
     root_mean_squared_error,
 )
-from sklearn.pipeline import Pipeline
-from sklearn.preprocessing import OneHotEncoder, StandardScaler
 
 logger = logging.getLogger(__name__)
 
 MLFLOW_MODEL_SERIALIZATION_FORMAT = mlflow_sklearn.SERIALIZATION_FORMAT_CLOUDPICKLE
-DEFAULT_SHAP_SAMPLE_SIZE = 25
 
 
-def model_train(
-    train_data: pd.DataFrame,
-    val_data: pd.DataFrame,
-    parameters: Dict[str, Any],
-) -> Tuple[Pipeline, list[str], Dict[str, float], pd.DataFrame]:
-    target_col = parameters["target_col"]
-    X_train = train_data.drop(columns=[target_col])
-    y_train = train_data[target_col].astype(float)
-    X_val = val_data.drop(columns=[target_col])
-    y_val = val_data[target_col].astype(float)
+def _evaluate_predictions(y_true: pd.Series, y_pred: np.ndarray) -> dict[str, float]:
+    return {
+        "mae": float(mean_absolute_error(y_true, y_pred)),
+        "rmse": float(root_mean_squared_error(y_true, y_pred)),
+        "median_ae": float(median_absolute_error(y_true, y_pred)),
+        "r2": float(r2_score(y_true, y_pred)),
+    }
 
-    numeric_features = X_train.select_dtypes(include=["number", "bool"]).columns.tolist()
-    categorical_features = X_train.select_dtypes(exclude=["number", "bool"]).columns.tolist()
 
-    numeric_transformer = Pipeline(
-        steps=[
-            ("imputer", SimpleImputer(strategy="median")),
-            ("scaler", StandardScaler()),
-        ]
-    )
-
-    categorical_transformer = Pipeline(
-        steps=[
-            ("imputer", SimpleImputer(strategy="most_frequent")),
-            ("encoder", OneHotEncoder(handle_unknown="ignore")),
-        ]
-    )
-
-    preprocessor = ColumnTransformer(
-        transformers=[
-            ("numeric", numeric_transformer, numeric_features),
-            ("categorical", categorical_transformer, categorical_features),
-        ]
-    )
-
-    model_params = parameters["model_params"]
-
-    model = Pipeline(
-        steps=[
-            ("preprocessor", preprocessor),
-            ("regressor", RandomForestRegressor(**model_params)),
-        ]
-    )
-
-    mlflow.set_tracking_uri(parameters["mlflow_tracking_uri"])
-    mlflow.set_experiment(parameters["mlflow_experiment_name"])
-
-    with mlflow.start_run(run_name="kedro_random_forest_regressor", nested=True):
-        model.fit(X_train, y_train)
-        y_pred = model.predict(X_val)
-
-        metrics = {
-            "mae": mean_absolute_error(y_val, y_pred),
-            "rmse": root_mean_squared_error(y_val, y_pred),
-            "median_ae": median_absolute_error(y_val, y_pred),
-            "r2": r2_score(y_val, y_pred),
+def _validation_predictions(y_true: pd.Series, y_pred: np.ndarray) -> pd.DataFrame:
+    actual = y_true.reset_index(drop=True)
+    return pd.DataFrame(
+        {
+            "actual_tip_amount": actual,
+            "predicted_tip_amount": y_pred,
+            "residual": actual - y_pred,
         }
+    )
 
-        mlflow.log_params(model_params)
+
+def _model_params(
+    selected_model_metadata: dict[str, Any],
+    model_train_parameters: dict[str, Any],
+    model_selection_parameters: dict[str, Any],
+) -> tuple[str, dict[str, Any]]:
+    selected_name = selected_model_metadata.get(
+        "selected_model_name",
+        model_train_parameters.get("selected_model_name", "random_forest_current"),
+    )
+    candidates = model_selection_parameters.get("candidates", {})
+    params = candidates.get(selected_name, model_train_parameters["model_params"])
+    return selected_name, params
+
+
+def _feature_importance_plot(
+    model: RandomForestRegressor,
+    columns: list[str],
+    max_display: int = 20,
+):
+    importances = pd.Series(model.feature_importances_, index=columns)
+    top_importances = importances.sort_values(ascending=False).head(max_display)
+
+    fig, ax = plt.subplots(figsize=(10, 6))
+    top_importances.sort_values().plot.barh(ax=ax)
+    ax.set_title("Top Random Forest Feature Importances")
+    ax.set_xlabel("Importance")
+    fig.tight_layout()
+    return fig
+
+
+def model_train(  # noqa: PLR0913
+    X_train: pd.DataFrame,
+    X_val: pd.DataFrame,
+    y_train: pd.DataFrame,
+    y_val: pd.DataFrame,
+    best_columns: list[str],
+    selected_model_metadata: dict[str, Any],
+    model_train_parameters: dict[str, Any],
+    model_selection_parameters: dict[str, Any],
+):
+    """Train the production estimator on already preprocessed features."""
+    columns = [column for column in best_columns if column in X_train.columns]
+    if not columns:
+        raise ValueError("No selected columns are available for model training.")
+
+    selected_name, params = _model_params(
+        selected_model_metadata,
+        model_train_parameters,
+        model_selection_parameters,
+    )
+    X_train_selected = X_train.loc[:, columns]
+    X_val_selected = X_val.loc[:, columns]
+    y_train_series = y_train.iloc[:, 0].astype(float)
+    y_val_series = y_val.iloc[:, 0].astype(float)
+
+    model = RandomForestRegressor(**params)
+
+    mlflow.set_tracking_uri(model_train_parameters["mlflow_tracking_uri"])
+    mlflow.set_experiment(model_train_parameters["mlflow_experiment_name"])
+
+    with mlflow.start_run(run_name=f"kedro_{selected_name}", nested=True):
+        model.fit(X_train_selected, y_train_series)
+        y_pred = np.asarray(model.predict(X_val_selected), dtype=float)
+        metrics = _evaluate_predictions(y_val_series, y_pred)
+        mlflow.log_params(params)
         mlflow.log_metrics(metrics)
         mlflow.set_tags(
             {
                 "project": "green_taxi_mlops",
-                "target": target_col,
+                "target": model_train_parameters["target_col"],
                 "task": "regression",
                 "stage": "kedro_model_train",
+                "selected_model_name": selected_name,
                 "model_serialization_format": MLFLOW_MODEL_SERIALIZATION_FORMAT,
             }
         )
@@ -99,33 +121,7 @@ def model_train(
             serialization_format=MLFLOW_MODEL_SERIALIZATION_FORMAT,
         )
 
-    predictions = pd.DataFrame(
-        {
-            "actual_tip_amount": y_val.reset_index(drop=True),
-            "predicted_tip_amount": y_pred,
-            "residual": y_val.reset_index(drop=True) - y_pred,
-        }
-    )
-
+    predictions = _validation_predictions(y_val_series, y_pred)
+    plot = _feature_importance_plot(model, columns)
     logger.info("Validation RMSE: %.4f", metrics["rmse"])
-
-    preprocessor_fitted = model.named_steps["preprocessor"]
-    rf_model = model.named_steps["regressor"]
-
-    shap_sample_size = int(parameters.get("shap_sample_size", DEFAULT_SHAP_SAMPLE_SIZE))
-    X_shap = X_train.sample(
-        n=min(shap_sample_size, len(X_train)),
-        random_state=model_params.get("random_state", 42),
-    )
-    X_shap_transformed = preprocessor_fitted.transform(X_shap)
-    if hasattr(X_shap_transformed, "toarray"):
-        X_shap_transformed = X_shap_transformed.toarray()
-    X_shap_transformed = np.asarray(X_shap_transformed, dtype=float)
-
-    explainer = shap.TreeExplainer(rf_model)
-    shap_values = explainer.shap_values(X_shap_transformed)
-
-    shap.summary_plot(shap_values, X_shap_transformed, show=False, max_display=20)
-
-    return model, X_train.columns.tolist(), metrics, predictions
-
+    return model, metrics, predictions, plot

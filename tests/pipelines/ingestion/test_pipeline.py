@@ -76,14 +76,14 @@ def test_ingestion_pipeline_creates_modeling_and_drift_outputs() -> None:
             "zone_lookup": MemoryDataset(data=_zone_lookup()),
             "params:modeling_years": MemoryDataset(data=[2024, 2025]),
             "params:drift_years": MemoryDataset(data=[2026]),
-            "modeling_ingested_data": MemoryDataset(),
+            "ingested_data": MemoryDataset(),
             "drift_ingested_data": MemoryDataset(),
         }
     )
 
     SequentialRunner().run(create_pipeline(), catalog)
 
-    modeling_data = catalog.load("modeling_ingested_data")
+    modeling_data = catalog.load("ingested_data")
     drift_data = catalog.load("drift_ingested_data")
 
     assert modeling_data["source_year"].tolist() == [2024, 2025]

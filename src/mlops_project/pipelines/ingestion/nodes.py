@@ -1,16 +1,16 @@
 import logging
 import re
-from typing import Callable
+from collections.abc import Callable
 
 import pandas as pd
 
 logger = logging.getLogger(__name__)
 
-AIRPORT_ZONE_IDS = {1, 132, 138}
+PARTITION_YEAR_PATTERN = re.compile(r"20\d{2}")
 
 
 def _partition_year(partition_id: str) -> int:
-    match = re.search(r"20\d{2}", partition_id)
+    match = PARTITION_YEAR_PATTERN.search(partition_id)
     if match is None:
         raise ValueError(f"Could not infer year from partition id: {partition_id}")
     return int(match.group())
@@ -20,10 +20,11 @@ def _load_partitions_for_years(
     partitioned_input: dict[str, Callable[[], pd.DataFrame]],
     years: list[int],
 ) -> pd.DataFrame:
+    requested_years = set(years)
     selected_loaders = {
         partition_id: loader
         for partition_id, loader in partitioned_input.items()
-        if _partition_year(partition_id) in years
+        if _partition_year(partition_id) in requested_years
     }
 
     if not selected_loaders:
@@ -42,7 +43,7 @@ def _load_partitions_for_years(
     )
 
     dataframes = []
-    for partition_id, loader in selected_loaders.items():
+    for partition_id, loader in sorted(selected_loaders.items()):
         partition = loader()
         partition["source_partition"] = partition_id
         partition["source_year"] = _partition_year(partition_id)

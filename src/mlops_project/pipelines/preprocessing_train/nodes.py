@@ -1,141 +1,153 @@
 import logging
-from typing import Tuple
+from typing import Any
 
 import pandas as pd
-from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import OneHotEncoder
+from sklearn.compose import ColumnTransformer
+from sklearn.impute import SimpleImputer
+from sklearn.pipeline import Pipeline
+from sklearn.preprocessing import OneHotEncoder, StandardScaler
 
 logger = logging.getLogger(__name__)
 
-# Airport zone IDs: EWR=1, JFK=132, LGA=138
 AIRPORT_ZONE_IDS = {1, 132, 138}
-
-# Columns to drop before training (leakage + raw temporals)
-COLS_TO_DROP = [
-    "tip_amount",             # used to create target — leakage
-    "total_amount",           # includes tip — leakage
-    "lpep_pickup_datetime",   # replaced by engineered features
-    "lpep_dropoff_datetime",  # replaced by engineered features
-    "payment_type",           # constant after filtering (all == 1)
-    "store_and_fwd_flag",     # administrative
-    "VendorID",               # administrative
-    "source_month",           # metadata column added during loading
+WEEKEND_START_DAY = 5
+DEFAULT_COLUMNS_TO_DROP = [
+    "VendorID",
+    "lpep_pickup_datetime",
+    "lpep_dropoff_datetime",
+    "store_and_fwd_flag",
+    "payment_type",
+    "total_amount",
+    "source_partition",
+    "trip_id",
 ]
 
 
-def clean_data(df: pd.DataFrame) -> pd.DataFrame:
-    """
-    Filter to credit-card trips and remove invalid/outlier rows.
+class GreenTaxiPreprocessor:
+    """Fit-on-train preprocessing used consistently for train, validation, and batch."""
 
-    - Drops ehail_fee if still present (already dropped in ingestion, safe to repeat).
-    - Filters to payment_type == 1 (credit card only; cash tips are not recorded).
-    - Drops rows missing essential fields.
-    - Removes physically impossible or extreme trips.
-    """
-    df = df.drop(columns=["ehail_fee"], errors="ignore")
+    def __init__(self, parameters: dict[str, Any], target_column: str) -> None:
+        self.columns_to_drop = parameters.get(
+            "columns_to_drop", DEFAULT_COLUMNS_TO_DROP
+        )
+        self.target_column = target_column
+        self.numeric_features_: list[str] = []
+        self.categorical_features_: list[str] = []
+        self.output_columns_: list[str] = []
+        self.transformer_: ColumnTransformer | None = None
 
-    n_start = len(df)
-    df = df[df["payment_type"] == 1].copy()
-    logger.info("After credit-card filter: %d rows (%.1f%%)", len(df), len(df) / n_start * 100)
+    def _add_features(self, data: pd.DataFrame) -> pd.DataFrame:
+        transformed = data.copy()
+        pickup = pd.to_datetime(transformed["lpep_pickup_datetime"])
+        dropoff = pd.to_datetime(transformed["lpep_dropoff_datetime"])
 
-    df = df.dropna(
-        subset=["lpep_pickup_datetime", "lpep_dropoff_datetime",
-                "PULocationID", "DOLocationID", "trip_distance", "fare_amount"]
-    )
+        transformed["trip_duration_min"] = (dropoff - pickup).dt.total_seconds() / 60
+        transformed["pickup_hour"] = pickup.dt.hour
+        transformed["pickup_dayofweek"] = pickup.dt.dayofweek
+        transformed["pickup_month"] = pickup.dt.month
+        transformed["is_weekend"] = (
+            transformed["pickup_dayofweek"] >= WEEKEND_START_DAY
+        ).astype(int)
+        transformed["is_rush_hour"] = (
+            (transformed["is_weekend"] == 0)
+            & (
+                transformed["pickup_hour"].isin(range(7, 10))
+                | transformed["pickup_hour"].isin(range(17, 20))
+            )
+        ).astype(int)
+        transformed["is_night"] = (
+            transformed["pickup_hour"].isin([22, 23, 0, 1, 2, 3, 4, 5]).astype(int)
+        )
+        transformed["is_airport"] = (
+            transformed["PULocationID"].isin(AIRPORT_ZONE_IDS)
+            | transformed["DOLocationID"].isin(AIRPORT_ZONE_IDS)
+        ).astype(int)
+        transformed = transformed.reset_index(drop=True)
+        transformed["trip_id"] = transformed.index
+        return transformed
 
-    df = df[(df["trip_distance"] > 0) & (df["trip_distance"] < 100)]
-    df = df[(df["fare_amount"] > 0) & (df["fare_amount"] < 500)]
-    df = df[df["lpep_pickup_datetime"] >= "2024-01-01"]
-    df = df[df["lpep_dropoff_datetime"] > df["lpep_pickup_datetime"]]
+    def _prepare(self, data: pd.DataFrame) -> pd.DataFrame:
+        prepared = self._add_features(data)
+        prepared = prepared.drop(columns=[self.target_column], errors="ignore")
+        columns_to_drop = [
+            column for column in self.columns_to_drop if column in prepared.columns
+        ]
+        return prepared.drop(columns=columns_to_drop)
 
-    duration_min = (
-        df["lpep_dropoff_datetime"] - df["lpep_pickup_datetime"]
-    ).dt.total_seconds() / 60
-    df = df[(duration_min >= 1) & (duration_min <= 180)]
+    def fit(self, data: pd.DataFrame) -> "GreenTaxiPreprocessor":
+        prepared = self._prepare(data)
+        self.numeric_features_ = prepared.select_dtypes(
+            include=["number", "bool"]
+        ).columns.tolist()
+        self.categorical_features_ = prepared.select_dtypes(
+            exclude=["number", "bool"]
+        ).columns.tolist()
 
-    logger.info("After cleaning: %d rows remaining", len(df))
-    return df.reset_index(drop=True)
+        numeric_transformer = Pipeline(
+            steps=[
+                ("imputer", SimpleImputer(strategy="median")),
+                ("scaler", StandardScaler()),
+            ]
+        )
+        categorical_transformer = Pipeline(
+            steps=[
+                ("imputer", SimpleImputer(strategy="most_frequent")),
+                (
+                    "encoder",
+                    OneHotEncoder(handle_unknown="ignore", sparse_output=False),
+                ),
+            ]
+        )
+        self.transformer_ = ColumnTransformer(
+            transformers=[
+                ("numeric", numeric_transformer, self.numeric_features_),
+                ("categorical", categorical_transformer, self.categorical_features_),
+            ],
+            verbose_feature_names_out=False,
+        )
+        self.transformer_.fit(prepared)
+        self.output_columns_ = self.transformer_.get_feature_names_out().tolist()
+        return self
 
-
-def engineer_features(df: pd.DataFrame) -> pd.DataFrame:
-    """
-    Add temporal and trip-efficiency features.
-
-    Borough columns (PU_borough, DO_borough) are already present from the
-    ingestion pipeline, so no zone-lookup join is needed here.
-    """
-    df = df.copy()
-    pickup = pd.to_datetime(df["lpep_pickup_datetime"])
-    dropoff = pd.to_datetime(df["lpep_dropoff_datetime"])
-
-    df["trip_duration_min"] = (dropoff - pickup).dt.total_seconds() / 60
-    df["pickup_hour"] = pickup.dt.hour
-    df["pickup_dayofweek"] = pickup.dt.dayofweek   # 0=Monday, 6=Sunday
-    df["pickup_month"] = pickup.dt.month
-
-    df["is_weekend"] = (df["pickup_dayofweek"] >= 5).astype(int)
-    df["is_rush_hour"] = (
-        (df["is_weekend"] == 0) &
-        (df["pickup_hour"].isin(range(7, 10)) | df["pickup_hour"].isin(range(17, 20)))
-    ).astype(int)
-    df["is_night"] = (
-        df["pickup_hour"].isin(list(range(22, 24)) + list(range(0, 6)))
-    ).astype(int)
-
-    df["speed_mph"] = (df["trip_distance"] / (df["trip_duration_min"] / 60)).clip(0, 80)
-    df["fare_per_mile"] = (df["fare_amount"] / df["trip_distance"]).clip(0, 50)
-
-    df["is_airport"] = (
-        df["PULocationID"].isin(AIRPORT_ZONE_IDS) | df["DOLocationID"].isin(AIRPORT_ZONE_IDS)
-    ).astype(int)
-    df["same_borough"] = (df["PU_borough"] == df["DO_borough"]).astype(int)
-
-    return df
+    def transform(self, data: pd.DataFrame) -> pd.DataFrame:
+        if self.transformer_ is None:
+            raise ValueError("GreenTaxiPreprocessor must be fitted before transform.")
+        prepared = self._prepare(data)
+        transformed = self.transformer_.transform(prepared)
+        return pd.DataFrame(transformed, columns=self.output_columns_, index=data.index)
 
 
-def preprocess_train(
-    ref_data: pd.DataFrame,
-    parameters: dict,
-) -> Tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame, OneHotEncoder]:
-    """
-    Full training preprocessing: clean → target → features → encode → split.
+def preprocessing_train(
+    X_train: pd.DataFrame,
+    X_val: pd.DataFrame,
+    parameters: dict[str, Any],
+    target_column: str,
+) -> tuple[
+    pd.DataFrame, pd.DataFrame, GreenTaxiPreprocessor, list[str], dict[str, Any]
+]:
+    """Fit preprocessing on X_train and transform train and validation features."""
+    transformer = GreenTaxiPreprocessor(parameters, target_column).fit(X_train)
+    X_train_preprocessed = transformer.transform(X_train).reset_index(drop=True)
+    X_val_preprocessed = transformer.transform(X_val).reset_index(drop=True)
+    production_columns = X_train_preprocessed.columns.tolist()
 
-    Returns X_train, X_test, y_train, y_test (as single-column DataFrames), encoder.
-    y_train/y_test are saved as DataFrames so Kedro's CSVDataset can round-trip them;
-    the modeling node can call .squeeze() or ["is_tipped"] to get a Series.
-    """
-    target = parameters["target_column"]
-    test_size = parameters.get("test_size", 0.2)
-    random_state = parameters.get("random_state", 42)
-
-    df = clean_data(ref_data)
-    df["is_tipped"] = (df["tip_amount"] > 0).astype(int)
-    df = engineer_features(df)
-
-    cat_cols = ["PU_borough", "DO_borough"]
-    encoder = OneHotEncoder(handle_unknown="ignore", sparse_output=False)
-    encoded = encoder.fit_transform(df[cat_cols])
-    encoded_df = pd.DataFrame(
-        encoded,
-        columns=encoder.get_feature_names_out(cat_cols),
-        index=df.index,
-    )
-    df = df.drop(columns=cat_cols)
-    df = pd.concat([df, encoded_df], axis=1)
-
-    cols_to_drop = [c for c in COLS_TO_DROP if c in df.columns]
-    df = df.drop(columns=cols_to_drop)
-    df = df.fillna(-1)
-
-    X = df.drop(columns=[target])
-    y = df[[target]]   # keep as DataFrame for catalog compatibility
-
-    X_train, X_test, y_train, y_test = train_test_split(
-        X, y, test_size=test_size, random_state=random_state, stratify=y
-    )
+    report = {
+        "train_rows": int(len(X_train_preprocessed)),
+        "validation_rows": int(len(X_val_preprocessed)),
+        "numeric_features_before_encoding": transformer.numeric_features_,
+        "categorical_features_before_encoding": transformer.categorical_features_,
+        "production_column_count": int(len(production_columns)),
+    }
 
     logger.info(
-        "Train: %d rows | Test: %d rows | Features: %d",
-        len(X_train), len(X_test), X_train.shape[1],
+        "Preprocessing fitted on %d train rows and produced %d columns.",
+        len(X_train_preprocessed),
+        len(production_columns),
     )
-    return X_train, X_test, y_train, y_test, encoder
+    return (
+        X_train_preprocessed,
+        X_val_preprocessed,
+        transformer,
+        production_columns,
+        report,
+    )

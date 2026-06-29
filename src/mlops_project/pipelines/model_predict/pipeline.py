@@ -9,12 +9,11 @@ def create_pipeline(**kwargs) -> Pipeline:
             node(
                 func=model_predict,
                 inputs=[
+                    "X_batch_preprocessed",
                     "production_model",
                     "production_columns",
-                    "val_data",
-                    "parameters",
                 ],
-                outputs="predictions",
+                outputs=["predictions", "predict_describe"],
                 name="model_predict_node",
             ),
         ]

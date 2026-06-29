@@ -155,3 +155,5 @@ class_materials
 .vscode
 .pytest_cache
 /classes
+.ruff_cache
+.agents

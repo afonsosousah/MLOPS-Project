@@ -1,0 +1,33 @@
+column,test,statistic,p_value,drift_detected
+RatecodeID,ks,0.014379,0.0,True
+PULocationID,ks,0.025208,0.0,True
+DOLocationID,ks,0.014385,0.0,True
+passenger_count,ks,0.008655,0.0,True
+trip_distance,ks,0.036303,0.0,True
+fare_amount,ks,0.038687,0.0,True
+extra,ks,0.013781,0.0,True
+mta_tax,ks,0.014331,0.0,True
+tolls_amount,ks,0.003114,0.16762,False
+improvement_surcharge,ks,0.012594,0.0,True
+trip_type,ks,0.014225,0.0,True
+congestion_surcharge,ks,0.018206,0.0,True
+source_year,ks,0.999993,0.0,True
+trip_duration_min,ks,0.040637,0.0,True
+pickup_hour,ks,0.005186,0.002076,True
+pickup_dayofweek,ks,0.009793,0.0,True
+pickup_month,ks,0.504859,0.0,True
+is_weekend,ks,0.002085,0.634451,False
+is_rush_hour,ks,0.000513,1.0,False
+is_night,ks,0.003543,0.080829,False
+is_airport,ks,0.001778,0.813739,False
+PU_borough_Bronx,ks,0.000242,1.0,False
+PU_borough_Brooklyn,ks,0.000795,0.999998,False
+PU_borough_Manhattan,ks,0.000749,1.0,False
+PU_borough_Queens,ks,0.001299,0.982186,False
+PU_borough_Staten Island,ks,2e-06,1.0,False
+DO_borough_Bronx,ks,0.001226,0.990669,False
+DO_borough_Brooklyn,ks,0.000615,1.0,False
+DO_borough_EWR,ks,8.1e-05,1.0,False
+DO_borough_Manhattan,ks,0.007858,0.0,True
+DO_borough_Queens,ks,0.005959,0.000229,True
+DO_borough_Staten Island,ks,2.3e-05,1.0,False

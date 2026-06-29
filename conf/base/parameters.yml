@@ -1,7 +1,9 @@
 # Shared parameters used across all pipelines.
 
-# split date
-split_date: "2025-07-01"
+# Chronological splits
+train_test_split_date: "2025-07-01"
+train_val_split_date: "2025-01-01"
+target_column: tip_amount
 
 # Data splits by years
 reference_years:
@@ -13,10 +15,6 @@ modeling_years:
   - 2025
 drift_years:
   - 2026
-
-# Feature store 
-# when Hopsworks credentials are configured in conf/local/ -> set to TRUE
-to_feature_store: false
 
 # MLflow tracking
 mlflow_tracking_uri: sqlite:///mlflow.db

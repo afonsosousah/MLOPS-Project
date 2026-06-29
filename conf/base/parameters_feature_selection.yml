@@ -1,0 +1,8 @@
+feature_selection:
+  enabled: false
+  columns_to_drop:
+    - total_amount
+    - payment_type
+    - lpep_dropoff_datetime
+    - store_and_fwd_flag
+    - VendorID

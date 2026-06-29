@@ -8,14 +8,14 @@ def create_pipeline(**kwargs) -> Pipeline:
         [
             node(
                 func=unit_test,
-                inputs="modeling_ingested_data",
-                outputs="modeling_data_reporting_tests",
+                inputs="ingested_data",
+                outputs="reporting_tests",
                 name="modeling_data_unit_tests_node",
             ),
             node(
                 func=unit_test,
                 inputs="drift_ingested_data",
-                outputs="drift_data_reporting_tests",
+                outputs="drift_reporting_tests",
                 name="drift_data_unit_tests_node",
             ),
         ]

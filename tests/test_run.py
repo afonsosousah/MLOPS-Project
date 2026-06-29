@@ -6,30 +6,67 @@ def test_registered_pipelines_are_green_taxi_only():
 
     expected = {
         "__default__",
-        "data_cleaning",
-        "data_prep",
+        "data_drift",
+        "data_quality",
         "data_unit_tests",
-        "feature_engineering",
+        "drift_monitoring",
         "feature_selection",
+        "feature_store",
         "ingestion",
+        "model_predict",
+        "model_selection",
         "model_train",
+        "preprocessing_batch",
+        "preprocessing_train",
+        "production_full_prediction_process",
+        "production_full_train_process",
         "split_data",
-        "training",
+        "split_train",
     }
 
     assert expected.issubset(pipelines)
+    assert "data_cleaning" not in pipelines
+    assert "feature_engineering" not in pipelines
     assert not any(name.startswith("example_") for name in pipelines)
 
 
-def test_default_pipeline_contains_active_green_taxi_nodes():
+def test_default_pipeline_contains_bank_example_style_nodes():
     pipeline = register_pipelines()["__default__"]
     node_names = {node.name for node in pipeline.nodes}
 
     assert {
         "ingestion_node",
-        "clean_modeling_data_node",
-        "engineer_features_node",
-        "select_features_node",
+        "modeling_data_unit_tests_node",
         "split_data_node",
+        "split_train_node",
+        "preprocessing_train_node",
+        "select_features_node",
+        "model_selection_node",
         "model_train_node",
+        "preprocessing_batch_node",
+        "model_predict_node",
+        "detect_drift_node",
     }.issubset(node_names)
+    assert "upload_features_to_store_node" not in node_names
+
+
+def test_data_quality_pipeline_includes_ingestion_inputs():
+    pipeline = register_pipelines()["data_quality"]
+    node_names = {node.name for node in pipeline.nodes}
+
+    assert {
+        "ingestion_node",
+        "modeling_data_unit_tests_node",
+        "drift_data_unit_tests_node",
+    }.issubset(node_names)
+
+
+def test_feature_store_pipeline_is_separate_from_default():
+    pipelines = register_pipelines()
+
+    assert {node.name for node in pipelines["feature_store"].nodes} == {
+        "upload_features_to_store_node"
+    }
+    assert "upload_features_to_store_node" not in {
+        node.name for node in pipelines["__default__"].nodes
+    }

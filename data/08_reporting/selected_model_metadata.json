@@ -1,0 +1,72 @@
+{
+  "enabled": true,
+  "selected_model_name": "random_forest_current",
+  "selected_columns": [
+    "RatecodeID",
+    "PULocationID",
+    "DOLocationID",
+    "passenger_count",
+    "trip_distance",
+    "fare_amount",
+    "extra",
+    "mta_tax",
+    "tolls_amount",
+    "improvement_surcharge",
+    "trip_type",
+    "congestion_surcharge",
+    "source_year",
+    "trip_duration_min",
+    "pickup_hour",
+    "pickup_dayofweek",
+    "pickup_month",
+    "is_weekend",
+    "is_rush_hour",
+    "is_night",
+    "is_airport",
+    "PU_borough_Bronx",
+    "PU_borough_Brooklyn",
+    "PU_borough_Manhattan",
+    "PU_borough_Queens",
+    "PU_borough_Staten Island",
+    "DO_borough_Bronx",
+    "DO_borough_Brooklyn",
+    "DO_borough_EWR",
+    "DO_borough_Manhattan",
+    "DO_borough_Queens",
+    "DO_borough_Staten Island"
+  ],
+  "candidates": [
+    {
+      "name": "random_forest_baseline",
+      "params": {
+        "n_estimators": 80,
+        "max_depth": 12,
+        "min_samples_leaf": 10,
+        "max_features": "sqrt",
+        "random_state": 42,
+        "n_jobs": -1
+      },
+      "metrics": {
+        "mae": 1.3215152823597234,
+        "rmse": 2.4163563117973057,
+        "r2": 0.4009260297579491
+      }
+    },
+    {
+      "name": "random_forest_current",
+      "params": {
+        "n_estimators": 120,
+        "max_depth": 16,
+        "min_samples_leaf": 8,
+        "max_features": "sqrt",
+        "random_state": 42,
+        "n_jobs": -1
+      },
+      "metrics": {
+        "mae": 1.315487536384271,
+        "rmse": 2.4112218491236894,
+        "r2": 0.4034692432263064
+      }
+    }
+  ]
+}

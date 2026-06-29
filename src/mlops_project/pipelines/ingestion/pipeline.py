@@ -14,7 +14,7 @@ def create_pipeline(**kwargs) -> Pipeline:
                     "params:modeling_years",
                     "params:drift_years",
                 ],
-                outputs=["modeling_ingested_data", "drift_ingested_data"],
+                outputs=["ingested_data", "drift_ingested_data"],
                 name="ingestion_node",
             ),
         ]

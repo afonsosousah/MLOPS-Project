@@ -1,0 +1,2 @@
+data_drift:
+  p_value_threshold: 0.05

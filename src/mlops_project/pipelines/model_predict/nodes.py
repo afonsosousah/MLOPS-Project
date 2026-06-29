@@ -1,41 +1,36 @@
 import logging
-from typing import Any, Dict, List
+from collections.abc import Sequence
+from typing import Any
 
+import numpy as np
 import pandas as pd
-from sklearn.pipeline import Pipeline
 
 logger = logging.getLogger(__name__)
 
 
 def model_predict(
-    model: Pipeline,
-    columns: List[str],
     data: pd.DataFrame,
-    parameters: Dict[str, Any],
-) -> pd.DataFrame:
-    """Run batch predictions with the production model.
+    model: Any,
+    columns: Sequence[str],
+) -> tuple[pd.DataFrame, dict[str, Any]]:
+    """Run held-out batch predictions with the production model."""
+    feature_cols = [column for column in columns if column in data.columns]
+    if not feature_cols:
+        raise ValueError("No production model columns were found in the batch data.")
 
-    Selects the columns the model was trained on (dropping any that are absent
-    from *data*, e.g. the target), runs inference, and returns the input data
-    augmented with a **predicted_tip_amount** column and, when the ground-truth
-    target is present, a **residual** column.
-    """
-    target_col = parameters["target_col"]
-
-    feature_cols = [c for c in columns if c in data.columns and c != target_col]
-    X = data[feature_cols]
-    y_pred = model.predict(X)
-
+    predictions = np.asarray(model.predict(data.loc[:, feature_cols]), dtype=float)
     result = data.copy()
-    result["predicted_tip_amount"] = y_pred
-
-    if target_col in data.columns:
-        result["residual"] = result[target_col] - y_pred
+    result["predicted_tip_amount"] = predictions
+    summary = {
+        "rows": int(len(result)),
+        "prediction_mean": float(predictions.mean()),
+        "prediction_min": float(predictions.min()),
+        "prediction_max": float(predictions.max()),
+    }
 
     logger.info(
         "Batch prediction complete: %d rows, mean predicted tip = %.2f.",
         len(result),
-        float(y_pred.mean()),
+        summary["prediction_mean"],
     )
-
-    return result
+    return result, summary

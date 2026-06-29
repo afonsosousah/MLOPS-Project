@@ -1,6 +1,5 @@
 # Active Kedro catalog for the Green Taxi MLOps project.
-# Generated starter Spaceflights datasets are intentionally omitted because the
-# starter pipelines are not part of the registered project graph.
+# The structure follows the Green Taxi artifact lifecycle and Kedro data layers.
 
 # raw: source data used by ingestion
 
@@ -14,93 +13,105 @@ zone_lookup:
   type: pandas.CSVDataset
   filepath: data/01_raw/taxi_zone_lookup.csv
 
-# intermediate: ingestion
+# intermediate: ingested modeling and drift staging data
 
-modeling_ingested_data:
+ingested_data:
   type: pandas.ParquetDataset
-  filepath: data/02_intermediate/modeling_ingested_data.parquet
+  filepath: data/02_intermediate/ingested_data.parquet
 
 drift_ingested_data:
   type: pandas.ParquetDataset
   filepath: data/02_intermediate/drift_ingested_data.parquet
 
-# primary: data after cleaning pipeline 
-
-modeling_cleaned_data:
-  type: pandas.ParquetDataset
-  filepath: data/03_primary/modeling_cleaned_data.parquet
-
-# feature: data after feature engeneering and selection
-
-modeling_engineered_data:
-  type: pandas.ParquetDataset
-  filepath: data/04_feature/modeling_engineered_data.parquet
-
-modeling_selected_features_data:
-  type: pandas.ParquetDataset
-  filepath: data/04_feature/modeling_selected_features_data.parquet
-
-# model_input: outputs produced by preprocessing_train
+# primary: chronological project and train/validation splits
 
 train_data:
   type: pandas.ParquetDataset
-  filepath: data/05_model_input/train_data.parquet
+  filepath: data/03_primary/train_data.parquet
 
-val_data:
+test_data:
   type: pandas.ParquetDataset
-  filepath: data/05_model_input/val_data.parquet
+  filepath: data/03_primary/test_data.parquet
 
-X_train:
+# primary: chronological train/validation feature-label split before learned preprocessing
+
+X_train_data:
   type: pandas.ParquetDataset
-  filepath: data/05_model_input/X_train.parquet
+  filepath: data/03_primary/X_train_data.parquet
 
-X_test:
+X_val_data:
   type: pandas.ParquetDataset
-  filepath: data/05_model_input/X_test.parquet
+  filepath: data/03_primary/X_val_data.parquet
 
-y_train:
-  type: pandas.CSVDataset
-  filepath: data/05_model_input/y_train.csv
-  save_args:
-    index: false
+y_train_data:
+  type: pandas.ParquetDataset
+  filepath: data/03_primary/y_train_data.parquet
 
-y_test:
-  type: pandas.CSVDataset
-  filepath: data/05_model_input/y_test.csv
-  save_args:
-    index: false
+y_val_data:
+  type: pandas.ParquetDataset
+  filepath: data/03_primary/y_val_data.parquet
 
-# models: fitted preprocessing and model artifacts
+# feature artifacts: fitted preprocessing and selected production columns
 
-encoder_transform:
+preprocessing_transformer:
   type: pickle.PickleDataset
-  filepath: data/06_models/encoder_transform.pkl
+  filepath: data/04_feature/preprocessing_transformer.pkl
 
-trained_model:
+best_columns:
   type: pickle.PickleDataset
-  filepath: data/06_models/trained_model.pkl
+  filepath: data/04_feature/best_columns.pkl
 
-# model_output: batch inference and explanation artifacts
+production_columns:
+  type: pickle.PickleDataset
+  filepath: data/04_feature/production_columns.pkl
 
-preprocessed_batch_data:
+# model input: preprocessed matrices consumed by model nodes
+
+X_train_preprocessed:
   type: pandas.ParquetDataset
-  filepath: data/07_model_output/preprocessed_batch_data.parquet
+  filepath: data/05_model_input/X_train_preprocessed.parquet
 
-predictions:
+X_val_preprocessed:
   type: pandas.ParquetDataset
-  filepath: data/07_model_output/predictions.parquet
+  filepath: data/05_model_input/X_val_preprocessed.parquet
 
-shap_values:
+X_batch_preprocessed:
   type: pandas.ParquetDataset
-  filepath: data/07_model_output/shap_values.parquet
+  filepath: data/05_model_input/X_batch_preprocessed.parquet
+
+# models
 
 production_model:
   type: pickle.PickleDataset
   filepath: data/06_models/production_model.pkl
 
-production_columns:
-  type: pickle.PickleDataset
-  filepath: data/06_models/columns.pkl
+# model outputs
+
+validation_predictions:
+  type: pandas.ParquetDataset
+  filepath: data/07_model_output/validation_predictions.parquet
+
+predictions:
+  type: pandas.ParquetDataset
+  filepath: data/07_model_output/predictions.parquet
+
+# reporting
+
+reporting_tests:
+  type: pandas.CSVDataset
+  filepath: data/08_reporting/data_unit_tests_report.csv
+  save_args:
+    index: false
+
+drift_reporting_tests:
+  type: pandas.CSVDataset
+  filepath: data/08_reporting/drift_data_unit_tests_report.csv
+  save_args:
+    index: false
+
+reporting_data_train:
+  type: json.JSONDataset
+  filepath: data/08_reporting/reporting_data_train.json
 
 production_model_metrics:
   type: kedro_mlflow.io.artifacts.MlflowArtifactDataset
@@ -108,11 +119,19 @@ production_model_metrics:
     type: json.JSONDataset
     filepath: data/08_reporting/production_model_metrics.json
 
-validation_predictions:
-  type: pandas.ParquetDataset
-  filepath: data/08_reporting/validation_predictions.parquet
+selected_model_metadata:
+  type: json.JSONDataset
+  filepath: data/08_reporting/selected_model_metadata.json
 
-# reporting
+predict_describe:
+  type: json.JSONDataset
+  filepath: data/08_reporting/predict_describe.json
+
+output_plot:
+  type: kedro_mlflow.io.artifacts.MlflowArtifactDataset
+  dataset:
+    type: kedro_datasets.matplotlib.MatplotlibDataset
+    filepath: data/08_reporting/feature_importance.png
 
 drift_report:
   type: pandas.CSVDataset
@@ -120,14 +139,8 @@ drift_report:
   save_args:
     index: false
 
-modeling_data_reporting_tests:
+feature_store_upload_report:
   type: pandas.CSVDataset
-  filepath: data/08_reporting/modeling_data_unit_tests_report.csv
-  save_args:
-    index: false
-
-drift_data_reporting_tests:
-  type: pandas.CSVDataset
-  filepath: data/08_reporting/drift_data_unit_tests_report.csv
+  filepath: data/08_reporting/feature_store_upload_report.csv
   save_args:
     index: false

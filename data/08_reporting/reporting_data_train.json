@@ -1,0 +1,32 @@
+{
+  "train_rows": 421418,
+  "validation_rows": 197871,
+  "numeric_features_before_encoding": [
+    "RatecodeID",
+    "PULocationID",
+    "DOLocationID",
+    "passenger_count",
+    "trip_distance",
+    "fare_amount",
+    "extra",
+    "mta_tax",
+    "tolls_amount",
+    "improvement_surcharge",
+    "trip_type",
+    "congestion_surcharge",
+    "source_year",
+    "trip_duration_min",
+    "pickup_hour",
+    "pickup_dayofweek",
+    "pickup_month",
+    "is_weekend",
+    "is_rush_hour",
+    "is_night",
+    "is_airport"
+  ],
+  "categorical_features_before_encoding": [
+    "PU_borough",
+    "DO_borough"
+  ],
+  "production_column_count": 32
+}

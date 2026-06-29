@@ -8,7 +8,11 @@ def create_pipeline(**kwargs) -> Pipeline:
         [
             node(
                 func=detect_drift,
-                inputs=["modeling_ingested_data", "drift_ingested_data"],
+                inputs=[
+                    "X_train_preprocessed",
+                    "X_batch_preprocessed",
+                    "params:data_drift",
+                ],
                 outputs="drift_report",
                 name="detect_drift_node",
             ),

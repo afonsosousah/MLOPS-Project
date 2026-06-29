@@ -1,6 +1,6 @@
 # Project Brief
 
-Last updated: 2026-06-28
+Last updated: 2026-06-29
 
 This is the single project truth document for the NYC TLC Green Taxi MLOps project. It replaces the older split state files `docs/project_state.md`, `docs/project_plan.md`, and `docs/notebook_structure.md`.
 
@@ -37,20 +37,27 @@ Current notebooks:
 - `notebooks/02_data_preprocessing.ipynb`: data cleaning, target definition, feature engineering, optional Hopsworks upload, and intermediate file outputs.
 - `notebooks/03_experiment_tracking_and_modeling.ipynb`: MLflow experiment tracking, baseline/model comparison, small Optuna tuning run, and registration flow for the current `tip_amount` regression task.
 
-Current active Kedro registry:
+Current active Kedro registry target after the bank-example style pipeline refactor:
 
 - `ingestion`
 - `data_unit_tests`
-- `data_cleaning`
-- `feature_engineering`
-- `feature_selection`
 - `split_data`
+- `split_train`
+- `preprocessing_train`
+- `preprocessing_batch`
+- `feature_selection`
+- `model_selection`
 - `model_train`
-- `data_prep`
-- `training`
+- `model_predict`
+- `feature_store`
+- `data_drift`
+- `data_quality`
+- `drift_monitoring`
+- `production_full_train_process`
+- `production_full_prediction_process`
 - `__default__`
 
-Generated starter/example pipelines may still exist under `src/mlops_project/pipelines/`, but they are not part of the project contract and should not be registered or used in tests.
+The active pipeline structure now follows the course `week_05/bank-example` sequence with Green Taxi-specific names and behavior. `split_data` creates chronological `train_data` and `test_data`; `split_train` creates chronological `X_train_data`, `X_val_data`, `y_train_data`, and `y_val_data`; `preprocessing_train` fits preprocessing only on `X_train_data` and transforms train/validation features; `preprocessing_batch` applies the saved preprocessing transformer to `test_data`; and `model_predict` handles held-out batch prediction. The retired `data_cleaning` and `feature_engineering` pipeline packages should not be registered. Optional Hopsworks upload belongs in the separate `feature_store` pipeline and must remain disabled by default. The `__default__` pipeline should avoid external feature-store side effects.
 
 Current validation policy:
 
@@ -63,13 +70,33 @@ Current known cleanup status:
 - Historical markdown state files were consolidated into this brief on 2026-06-28.
 - Pytest is configured to collect only project tests, not tests embedded in `class_materials/`.
 - The stale generated Spaceflights data science test was removed from project tests.
+- Pipeline cleanup completed on 2026-06-28: stale starter/copy pipeline folders were removed, active Green Taxi pipelines now follow the `pipeline.py`/`nodes.py` package pattern, and optional Hopsworks upload is isolated in the disabled-by-default `feature_store` pipeline.
+- Bank-example style pipeline reorganization completed on 2026-06-29: active pipelines use explicit `train_data`/`test_data`, `X_train_data`/`X_val_data`, fitted preprocessing artifacts, model selection, model training, model prediction, and drift monitoring contracts.
+- Catalog folder organization was corrected on 2026-06-29 to follow the Green Taxi artifact lifecycle: split train/validation raw tables live in `data/03_primary/`, transformed model matrices live in `data/05_model_input/`, reusable preprocessing/feature-selection artifacts live in `data/04_feature/`, model predictions live in `data/07_model_output/`, and reporting/test summaries live in `data/08_reporting/`.
 - Git may report dubious ownership in this workspace; do not change global Git config unless the user explicitly approves it.
 
 Current verification status:
 
-- `uv run pytest tests -q` passed on 2026-06-28 with 10 tests.
-- `uv run kedro registry list` passed on 2026-06-28 and lists only active Green Taxi pipelines plus `data_prep`, `training`, and `__default__`.
-- `uv run kedro run --pipelines=model_train` passed on 2026-06-28; the focused run logged the model, reported validation RMSE 3.4767, saved the production model outputs, and completed one node successfully.
+- `uv run kedro registry list` passed on 2026-06-29 after the catalog folder reordering and still lists the active Green Taxi base and composite pipelines.
+- `uv run pytest tests -q` passed on 2026-06-29 after the catalog folder reordering with 35 tests.
+- `uv run ruff format src\mlops_project\pipelines tests` passed on 2026-06-29 for the bank-example style pipeline/test scope.
+- `uv run ruff check src\mlops_project\pipelines tests` passed on 2026-06-29 for the bank-example style pipeline/test scope.
+- `uv run pytest tests -q` passed on 2026-06-29 with 35 tests.
+- `uv run kedro registry list` passed on 2026-06-29 and lists active Green Taxi base pipelines plus composed workflows: `data_quality`, `drift_monitoring`, `production_full_train_process`, `production_full_prediction_process`, and `__default__`.
+- `uv run kedro run --pipeline production_full_train_process` passed on 2026-06-29; the run retained 802,481 filtered modeling rows, split 619,289 train rows / 183,192 test rows, split 421,418 train rows / 197,871 validation rows, produced 32 preprocessed production columns, selected `random_forest_current`, and reported validation RMSE 2.3766.
+- `uv run kedro run --pipeline production_full_prediction_process` passed on 2026-06-29 and saved predictions for 183,192 held-out test rows with mean predicted tip amount 3.78.
+- `uv run kedro run --pipeline data_drift` passed on 2026-06-29 against `X_train_preprocessed` and `X_batch_preprocessed`; the run saved a drift report with 18 of 32 tested columns flagged at `p < 0.05`.
+
+- `uv run ruff format src\mlops_project\pipelines tests` and `uv run ruff check src\mlops_project\pipelines tests` passed on 2026-06-28 for the refactored pipeline/test scope. A full `src` lint still reports pre-existing FastAPI style issues in `src/mlops_project/api/main.py` that were outside this pipeline refactor.
+- `uv run pytest tests\pipelines tests\test_run.py -q` passed on 2026-06-28 with 28 focused tests.
+- `uv run pytest tests -q` passed on 2026-06-28 with 28 tests.
+- `uv run kedro registry list` passed on 2026-06-28 before the 2026-06-29 bank-example style refactor. Re-run registry verification after the current refactor.
+- `uv run kedro run --pipelines data_unit_tests` passed on 2026-06-28; modeling checks passed and drift-holdout completeness warnings remained warning-level findings.
+- `uv run kedro run --pipelines data_prep` passed on 2026-06-28 before `data_prep` was retired in favor of explicit `split_data`, `split_train`, and preprocessing pipelines.
+- `uv run kedro run --pipelines feature_store` passed on 2026-06-28 and skipped Hopsworks upload because `feature_store.enabled` is false.
+- `uv run kedro run --pipelines model_train` passed on 2026-06-28; the focused run logged the model, reported validation RMSE 3.4767, saved the production model outputs, and completed one node successfully.
+- `uv run kedro run --pipelines model_predict` passed on 2026-06-28 and saved batch predictions for 183,192 validation rows.
+- `uv run kedro run --pipelines data_drift` passed on 2026-06-28 and saved a drift report with 19 of 21 tested columns flagged at `p < 0.05`.
 - `model_train` MLflow model logging uses explicit `cloudpickle` serialization because MLflow 3 defaults to `skops`, and the current fitted sklearn pipeline cannot be serialized in `skops` format. Only load those local MLflow model artifacts from trusted project runs.
 - `kedro-mlflow` should use the same local SQLite backend as the project MLflow parameters (`sqlite:///mlflow.db`) instead of its default `mlruns` file store, which MLflow 3 blocks unless explicitly allowed.
 - The `model_train` SHAP step should use a small configured sample, then pass a numeric dense array to `TreeExplainer`; the full fitted preprocessing output is a high-cardinality sparse matrix that is too large to densify.
@@ -86,7 +113,9 @@ Locked decisions:
 - Current working target: `tip_amount` regression.
 - Current modeling period: 2024-2025 Green Taxi data.
 - Current drift holdout: available 2026 Green Taxi months.
-- Current split parameter: `split_date: "2025-07-01"`.
+- Current train/test split parameter: `train_test_split_date: "2025-07-01"`.
+- Current train/validation split parameter: `train_val_split_date: "2025-01-01"`.
+- Current catalog convention: `03_primary` stores split raw analytical tables, `04_feature` stores reusable preprocessing and selected-column artifacts, `05_model_input` stores preprocessed feature matrices consumed by model nodes, `07_model_output` stores predictions, and `08_reporting` stores metrics, reports, plots, and validation summaries.
 - Hopsworks is optional and controlled by configuration. Keep credentials out of version control.
 - Final notebook outputs should remain visible after reviewed reruns.
 
@@ -190,7 +219,7 @@ uv run kedro run --pipeline data_unit_tests
 Run narrower tests first when changing one pipeline, for example:
 
 ```powershell
-uv run pytest tests\pipelines\ingestion tests\pipelines\data_unit_tests tests\pipelines\data_cleaning -q
+uv run pytest tests\pipelines\ingestion tests\pipelines\data_unit_tests tests\pipelines\split_data -q
 ```
 
 Do not use unscoped `pytest` if it collects `class_materials/`. Do not treat validation warnings as failures unless the project brief and report explain why a warning became a production gate.

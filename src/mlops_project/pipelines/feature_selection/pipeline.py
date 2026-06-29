@@ -8,8 +8,12 @@ def create_pipeline(**kwargs) -> Pipeline:
         [
             node(
                 func=select_features,
-                inputs="modeling_engineered_data",
-                outputs="modeling_selected_features_data",
+                inputs=[
+                    "X_train_preprocessed",
+                    "y_train_data",
+                    "params:feature_selection",
+                ],
+                outputs="best_columns",
                 name="select_features_node",
             )
         ]

@@ -1,34 +1,38 @@
-import pandas as pd
+from typing import Any
+
 import great_expectations as gx
+import pandas as pd
+
 
 def _add_if_present(
     suite: gx.ExpectationSuite,
     df: pd.DataFrame,
     column: str,
-    expectation,
+    expectation: Any,
 ) -> None:
     if column in df.columns:
         suite.add_expectation(expectation)
 
-def _parse_results(results) -> pd.DataFrame:
+
+def _parse_results(results: Any) -> pd.DataFrame:
     rows = []
-    for r in results.results:
-        kwargs = r.expectation_config.kwargs or {}
+    for result in results.results:
+        kwargs = result.expectation_config.kwargs or {}
         column = kwargs.get("column", "")
         if not column and kwargs.get("column_A") and kwargs.get("column_B"):
             column = f"{kwargs['column_A']} > {kwargs['column_B']}"
         rows.append(
             {
-                "success": r.success,
-                "severity": "pass" if r.success else "warning",
-                "expectation_type": r.expectation_config.type,
+                "success": result.success,
+                "severity": "pass" if result.success else "warning",
+                "expectation_type": result.expectation_config.type,
                 "column": column,
                 "min_value": kwargs.get("min_value", ""),
                 "max_value": kwargs.get("max_value", ""),
                 "value_set": str(kwargs.get("value_set", "")),
-                "unexpected_count": r.result.get("unexpected_count", ""),
-                "unexpected_percent": r.result.get("unexpected_percent", ""),
-                "observed_value": str(r.result.get("observed_value", "")),
+                "unexpected_count": result.result.get("unexpected_count", ""),
+                "unexpected_percent": result.result.get("unexpected_percent", ""),
+                "observed_value": str(result.result.get("observed_value", "")),
             }
         )
     return pd.DataFrame(rows)
