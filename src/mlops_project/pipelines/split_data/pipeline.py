@@ -9,7 +9,7 @@ def create_pipeline(**kwargs) -> Pipeline:
             node(
                 func=split_data,
                 inputs=[
-                    "ingested_data",
+                    "data_clean",
                     "params:train_test_split_date",
                     "params:preprocessing",
                 ],

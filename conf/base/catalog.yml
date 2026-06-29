@@ -23,6 +23,10 @@ drift_ingested_data:
   type: pandas.ParquetDataset
   filepath: data/02_intermediate/drift_ingested_data.parquet
 
+data_clean:
+  type: pandas.ParquetDataset
+  filepath: data/02_intermediate/data_clean.parquet
+
 # primary: chronological project and train/validation splits
 
 train_data:
