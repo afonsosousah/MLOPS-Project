@@ -64,9 +64,6 @@ class TripFeatures(BaseModel):
     is_rush_hour: Optional[int] = None
     is_night: Optional[int] = None
     is_airport: Optional[int] = None
-    trip_id: Optional[int] = None
-    PU_borough: Optional[str] = None
-    DO_borough: Optional[str] = None
     source_year: Optional[int] = None
 
 
