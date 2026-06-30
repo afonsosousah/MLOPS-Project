@@ -9,7 +9,8 @@ from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 
 MODEL_PATH = Path("data/06_models/production_model.pkl")
-COLUMNS_PATH = Path("data/06_models/columns.pkl")
+TRANSFORMER_PATH = Path("data/04_feature/preprocessing_transformer.pkl")
+COLUMNS_PATH = Path("data/04_feature/best_columns.pkl")
 
 app = FastAPI(
     title="Green Taxi Tip Predictor",
@@ -18,15 +19,20 @@ app = FastAPI(
 )
 
 _model = None
+_transformer = None
 _columns: list[str] = []
 
 
 @app.on_event("startup")
 def load_model() -> None:
-    global _model, _columns
-    if MODEL_PATH.exists() and COLUMNS_PATH.exists():
+    global _model, _transformer, _columns
+    if MODEL_PATH.exists():
         with open(MODEL_PATH, "rb") as f:
             _model = pickle.load(f)
+    if TRANSFORMER_PATH.exists():
+        with open(TRANSFORMER_PATH, "rb") as f:
+            _transformer = pickle.load(f)
+    if COLUMNS_PATH.exists():
         with open(COLUMNS_PATH, "rb") as f:
             _columns = pickle.load(f)
 
@@ -34,8 +40,8 @@ def load_model() -> None:
 class TripFeatures(BaseModel):
     """Input features for a single Green Taxi trip.
 
-    All fields are optional so the model's internal imputers handle any that
-    are absent.
+    All fields are optional so the preprocessor's imputers handle any that are absent.
+    Provide engineered features (trip_duration_min, pickup_hour, etc.) if available.
     """
 
     RatecodeID: Optional[float] = None
@@ -50,7 +56,6 @@ class TripFeatures(BaseModel):
     improvement_surcharge: Optional[float] = None
     congestion_surcharge: Optional[float] = None
     trip_type: Optional[float] = None
-    # engineered features
     trip_duration_min: Optional[float] = None
     pickup_hour: Optional[int] = None
     pickup_dayofweek: Optional[int] = None
@@ -60,7 +65,6 @@ class TripFeatures(BaseModel):
     is_night: Optional[int] = None
     is_airport: Optional[int] = None
     trip_id: Optional[int] = None
-    # location / borough
     PU_borough: Optional[str] = None
     DO_borough: Optional[str] = None
     source_year: Optional[int] = None
@@ -77,17 +81,21 @@ def health() -> dict:
 
 @app.post("/predict", response_model=PredictionResponse)
 def predict(trip: TripFeatures) -> PredictionResponse:
-    if _model is None:
-        raise HTTPException(status_code=503, detail="Model not loaded. Run the model_train pipeline first.")
+    if _model is None or _transformer is None:
+        raise HTTPException(
+            status_code=503,
+            detail="Model not loaded. Run the model_train pipeline first.",
+        )
 
-    row = {k: v for k, v in trip.model_dump().items() if v is not None}
-    df = pd.DataFrame([row])
+    df = pd.DataFrame([trip.model_dump()])
 
-    feature_cols = [c for c in _columns if c in df.columns]
-    missing = [c for c in _columns if c not in df.columns]
+    # Apply the fitted preprocessor (impute + scale numeric, impute + OHE categorical)
+    transformed = _transformer.transform(df)
+
+    # Select only the columns the model was trained on; fill any missing with 0
+    missing = [c for c in _columns if c not in transformed.columns]
     for col in missing:
-        df[col] = None
+        transformed[col] = 0.0
 
-    prediction = float(_model.predict(df[_columns])[0])
-
+    prediction = float(_model.predict(transformed[_columns])[0])
     return PredictionResponse(predicted_tip_amount=round(prediction, 4))

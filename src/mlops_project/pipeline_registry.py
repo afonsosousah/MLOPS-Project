@@ -5,6 +5,7 @@ from kedro.pipeline import Pipeline
 from mlops_project.pipelines import (
     data_drift,
     data_unit_tests,
+    data_cleaning,
     feature_selection,
     feature_store,
     ingestion,
@@ -20,6 +21,7 @@ from mlops_project.pipelines import (
 BASE_PIPELINE_FACTORIES = {
     "ingestion": ingestion.create_pipeline,
     "data_unit_tests": data_unit_tests.create_pipeline,
+    "data_cleaning": data_cleaning.create_pipeline,
     "split_data": split_data.create_pipeline,
     "split_train": split_train.create_pipeline,
     "preprocessing_train": preprocessing_train.create_pipeline,
@@ -35,6 +37,8 @@ BASE_PIPELINE_FACTORIES = {
 DEFAULT_STEPS = (
     "ingestion",
     "data_unit_tests",
+    "data_cleaning",
+    "feature_store",       
     "split_data",
     "split_train",
     "preprocessing_train",
@@ -67,6 +71,8 @@ def register_pipelines() -> dict[str, Pipeline]:
         base_pipelines,
         (
             "ingestion",
+            "data_cleaning",     
+            "feature_store",
             "split_data",
             "split_train",
             "preprocessing_train",
@@ -83,6 +89,8 @@ def register_pipelines() -> dict[str, Pipeline]:
         base_pipelines,
         (
             "ingestion",
+            "data_cleaning",     # <- adicionar
+            "feature_store",     # opcional, mas consistente com o resto
             "split_data",
             "split_train",
             "preprocessing_train",

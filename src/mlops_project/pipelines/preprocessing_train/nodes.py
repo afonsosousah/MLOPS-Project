@@ -9,8 +9,6 @@ from sklearn.preprocessing import OneHotEncoder, StandardScaler
 
 logger = logging.getLogger(__name__)
 
-AIRPORT_ZONE_IDS = {1, 132, 138}
-WEEKEND_START_DAY = 5
 DEFAULT_COLUMNS_TO_DROP = [
     "VendorID",
     "lpep_pickup_datetime",
@@ -24,7 +22,11 @@ DEFAULT_COLUMNS_TO_DROP = [
 
 
 class GreenTaxiPreprocessor:
-    """Fit-on-train preprocessing used consistently for train, validation, and batch."""
+    """Fit-on-train scaling/encoding, applied consistently to train, validation, and batch.
+
+    Expects data that already has engineered features (trip_duration_min, pickup_hour,
+    is_weekend, is_rush_hour, is_night, is_airport) — see data_cleaning pipeline.
+    """
 
     def __init__(self, parameters: dict[str, Any], target_column: str) -> None:
         self.columns_to_drop = parameters.get(
@@ -36,39 +38,8 @@ class GreenTaxiPreprocessor:
         self.output_columns_: list[str] = []
         self.transformer_: ColumnTransformer | None = None
 
-    def _add_features(self, data: pd.DataFrame) -> pd.DataFrame:
-        transformed = data.copy()
-        pickup = pd.to_datetime(transformed["lpep_pickup_datetime"])
-        dropoff = pd.to_datetime(transformed["lpep_dropoff_datetime"])
-
-        transformed["trip_duration_min"] = (dropoff - pickup).dt.total_seconds() / 60
-        transformed["pickup_hour"] = pickup.dt.hour
-        transformed["pickup_dayofweek"] = pickup.dt.dayofweek
-        transformed["pickup_month"] = pickup.dt.month
-        transformed["is_weekend"] = (
-            transformed["pickup_dayofweek"] >= WEEKEND_START_DAY
-        ).astype(int)
-        transformed["is_rush_hour"] = (
-            (transformed["is_weekend"] == 0)
-            & (
-                transformed["pickup_hour"].isin(range(7, 10))
-                | transformed["pickup_hour"].isin(range(17, 20))
-            )
-        ).astype(int)
-        transformed["is_night"] = (
-            transformed["pickup_hour"].isin([22, 23, 0, 1, 2, 3, 4, 5]).astype(int)
-        )
-        transformed["is_airport"] = (
-            transformed["PULocationID"].isin(AIRPORT_ZONE_IDS)
-            | transformed["DOLocationID"].isin(AIRPORT_ZONE_IDS)
-        ).astype(int)
-        transformed = transformed.reset_index(drop=True)
-        transformed["trip_id"] = transformed.index
-        return transformed
-
     def _prepare(self, data: pd.DataFrame) -> pd.DataFrame:
-        prepared = self._add_features(data)
-        prepared = prepared.drop(columns=[self.target_column], errors="ignore")
+        prepared = data.drop(columns=[self.target_column], errors="ignore")
         columns_to_drop = [
             column for column in self.columns_to_drop if column in prepared.columns
         ]

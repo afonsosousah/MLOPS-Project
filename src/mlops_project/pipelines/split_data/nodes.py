@@ -1,96 +1,87 @@
 import logging
 from typing import Any
+import importlib
+import os
 
 import pandas as pd
 
 logger = logging.getLogger(__name__)
 
-TRANSIENT_COLUMNS = ["ehail_fee", "cbd_congestion_fee"]
-DATETIME_COLUMNS = ["lpep_pickup_datetime", "lpep_dropoff_datetime"]
-REQUIRED_COLUMNS = [
-    "lpep_pickup_datetime",
-    "lpep_dropoff_datetime",
-    "PULocationID",
-    "DOLocationID",
-    "trip_distance",
-    "fare_amount",
-    "tip_amount",
-    "trip_type",
-]
 
 
-def _coerce_datetime_columns(data: pd.DataFrame) -> pd.DataFrame:
-    coerced = data.copy()
-    for column in DATETIME_COLUMNS:
-        coerced[column] = pd.to_datetime(coerced[column], errors="coerce")
-    return coerced
+def _load_dotenv_if_available() -> None:
+    try:
+        dotenv = importlib.import_module("dotenv")
+    except ModuleNotFoundError:
+        return
+    dotenv.load_dotenv()
 
 
-def _filter_valid_trips(
-    ingested_data: pd.DataFrame,
-    parameters: dict[str, Any],
-) -> pd.DataFrame:
-    """Apply deterministic row filters before chronological splitting."""
-    rows_before = len(ingested_data)
-    data = ingested_data.copy()
+def read_features_from_store(parameters: dict[str, Any]) -> pd.DataFrame:
+    """Read the engineered Green Taxi features back from the Hopsworks feature store."""
+    _load_dotenv_if_available()
 
-    min_pickup_datetime = pd.Timestamp(
-        parameters.get("min_pickup_datetime", "2024-01-01")
+    api_key = os.getenv(
+        parameters.get("credential_env_vars", {}).get("api_key", "FS_API_KEY")
     )
-    min_trip_distance = parameters.get("min_trip_distance", 0)
-    max_trip_distance = parameters.get("max_trip_distance", 100)
-    min_fare_amount = parameters.get("min_fare_amount", 0)
-    max_fare_amount = parameters.get("max_fare_amount", 500)
-    min_duration_min = parameters.get("min_duration_min", 1)
-    max_duration_min = parameters.get("max_duration_min", 180)
-    min_tip_amount = parameters.get("min_tip_amount", 0)
-    max_tip_amount = parameters.get("max_tip_amount", 200)
-    min_location_id = parameters.get("min_location_id", 1)
-    max_location_id = parameters.get("max_location_id", 263)
+    project_name = os.getenv(
+        parameters.get("credential_env_vars", {}).get(
+            "project_name", "FS_PROJECT_NAME"
+        )
+    )
+    if not api_key or not project_name:
+        raise ValueError("Missing Hopsworks credentials in environment variables.")
 
-    data = data.drop(columns=TRANSIENT_COLUMNS, errors="ignore")
-    data = _coerce_datetime_columns(data)
-    data = data[data["payment_type"].eq(1)].copy()
-    data = data.dropna(subset=REQUIRED_COLUMNS)
+    hopsworks = importlib.import_module("hopsworks")
+    project = hopsworks.login(api_key_value=api_key, project=project_name)
+    feature_store = project.get_feature_store()
 
-    data = data[data["PULocationID"].between(min_location_id, max_location_id)]
-    data = data[data["DOLocationID"].between(min_location_id, max_location_id)]
-    data = data[
-        data["trip_distance"].gt(min_trip_distance)
-        & data["trip_distance"].lt(max_trip_distance)
-    ]
-    data = data[
-        data["fare_amount"].gt(min_fare_amount)
-        & data["fare_amount"].lt(max_fare_amount)
-    ]
-    data = data[data["lpep_pickup_datetime"] >= min_pickup_datetime]
-    data = data[data["lpep_dropoff_datetime"] > data["lpep_pickup_datetime"]]
+    feature_group_name = parameters.get("feature_group_name", "green_taxi_features")
+    feature_group_version = int(parameters.get("feature_group_version", 1))
 
-    duration_min = (
-        data["lpep_dropoff_datetime"] - data["lpep_pickup_datetime"]
-    ).dt.total_seconds() / 60
-    data = data[(duration_min >= min_duration_min) & (duration_min <= max_duration_min)]
-    data = data[
-        data["tip_amount"].ge(min_tip_amount) & data["tip_amount"].lt(max_tip_amount)
-    ]
-    data = data.drop_duplicates().reset_index(drop=True)
+    feature_group = feature_store.get_feature_group(
+        name=feature_group_name, version=feature_group_version
+    )
+    data = feature_group.read()
 
     logger.info(
-        "Filtered ingested data before split: %d -> %d rows retained (%.2f%%).",
-        rows_before,
+        "Read %d rows from Hopsworks feature group '%s' (v%d).",
         len(data),
-        len(data) / rows_before * 100 if rows_before else 0,
+        feature_group_name,
+        feature_group_version,
     )
     return data
+
+
+
+def get_features(
+    parameters: dict[str, Any],
+    local_features: pd.DataFrame | None = None,
+) -> pd.DataFrame:
+    """Get engineered features either from Hopsworks or from a local dataset."""
+    use_feature_store = parameters.get("use_feature_store", False)
+
+    if not use_feature_store:
+        if local_features is None:
+            raise ValueError(
+                "use_feature_store is false but no local_features dataset was provided."
+            )
+        logger.info("Using local features dataset (%d rows).", len(local_features))
+        return local_features
+
+    return read_features_from_store(parameters)
+
+
+
+
+
 
 
 def split_data(
     df: pd.DataFrame,
     split_date: str,
-    parameters: dict[str, Any],
 ) -> tuple[pd.DataFrame, pd.DataFrame]:
     """Split filtered Green Taxi data into chronological train/test sets."""
-    df = _filter_valid_trips(df, parameters)
     data = df.copy()
     data["lpep_pickup_datetime"] = pd.to_datetime(data["lpep_pickup_datetime"])
     split_timestamp = pd.Timestamp(split_date)

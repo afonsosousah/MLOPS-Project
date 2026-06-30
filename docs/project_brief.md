@@ -1,6 +1,6 @@
 # Project Brief
 
-Last updated: 2026-06-29
+Last updated: 2026-06-30
 
 This is the single project truth document for the NYC TLC Green Taxi MLOps project. It replaces the older split state files `docs/project_state.md`, `docs/project_plan.md`, and `docs/notebook_structure.md`.
 
@@ -73,10 +73,33 @@ Current known cleanup status:
 - Pipeline cleanup completed on 2026-06-28: stale starter/copy pipeline folders were removed, active Green Taxi pipelines now follow the `pipeline.py`/`nodes.py` package pattern, and optional Hopsworks upload is isolated in the disabled-by-default `feature_store` pipeline.
 - Bank-example style pipeline reorganization completed on 2026-06-29: active pipelines use explicit `train_data`/`test_data`, `X_train_data`/`X_val_data`, fitted preprocessing artifacts, model selection, model training, model prediction, and drift monitoring contracts.
 - Catalog folder organization was corrected on 2026-06-29 to follow the Green Taxi artifact lifecycle: split train/validation raw tables live in `data/03_primary/`, transformed model matrices live in `data/05_model_input/`, reusable preprocessing/feature-selection artifacts live in `data/04_feature/`, model predictions live in `data/07_model_output/`, and reporting/test summaries live in `data/08_reporting/`.
+- Model selection was expanded on 2026-06-29 to compare simple sklearn regressor families with clean candidate names. The `dummy` candidate is retained as a reference baseline and is not eligible for production selection.
+- Optuna model and hyperparameter search was added to the model-selection design on 2026-06-29. The search is sklearn-only, samples across all eligible model families, uses 50 configured trials by default, and keeps `dummy` as a fixed non-eligible reference baseline.
+- MLflow tracking configuration is shared through `conf/base/parameters.yml`, not owned by `model_train`. Model selection logs one parent MLflow run plus one nested run per Optuna trial; every trial logs params plus train and validation metrics, and only the best Optuna trial logs a model artifact. The final production training run remains the authoritative deployable model artifact.
+- Model selection and production training report both train and validation scores. Existing flat `metrics`/`rmse` values remain validation-based for selection compatibility, with explicit `train_metrics` and `validation_metrics` added for overfit/generalization review.
 - Git may report dubious ownership in this workspace; do not change global Git config unless the user explicitly approves it.
 
 Current verification status:
 
+- `uv run pytest tests\pipelines\model_selection tests\pipelines\model_train -q` passed on 2026-06-30 with 11 tests after adding train/validation metric reporting and `linear_regression` factory support.
+- `uv run ruff format src\mlops_project\pipelines tests` and `uv run ruff check src\mlops_project\pipelines tests` passed on 2026-06-30 after adding train/validation metric reporting.
+- `uv run kedro run --pipelines model_selection --params "model_selection.search.n_trials=3"` passed on 2026-06-30 as a short verification run. It selected `random_forest` trial 0 with train RMSE 2.1304 and validation RMSE 2.3707, and saved `train_metrics` and `validation_metrics` for fixed candidates and Optuna trials in `selected_model_metadata`.
+- `uv run kedro run --pipelines model_train` reached model training on 2026-06-30 and logged train RMSE 2.1304 / validation RMSE 2.3707, but the Kedro run failed while saving `data/06_models/production_model.pkl` with Windows `OSError: [Errno 22] Invalid argument`; `production_model_metrics.json` therefore remains from the previous validation-only run.
+- `uv run pytest tests -q` passed on 2026-06-30 with 42 tests after adding train/validation metric reporting.
+- `uv run pytest tests\pipelines\model_selection tests\pipelines\model_train -q` passed on 2026-06-30 with 10 tests after adding shared MLflow config and per-trial Optuna MLflow logging.
+- `uv run ruff format src\mlops_project\pipelines tests` and `uv run ruff check src\mlops_project\pipelines tests` passed on 2026-06-30 after adding shared MLflow config and per-trial Optuna MLflow logging.
+- `uv run pytest tests -q` passed on 2026-06-30 with 41 tests after adding shared MLflow config and per-trial Optuna MLflow logging.
+- `uv run kedro run --pipelines model_selection --params "model_selection.search.n_trials=3"` passed on 2026-06-30 as a fast verification run without changing the configured 50-trial default. The run selected `hist_gradient_boosting` trial 1 with validation RMSE 2.3745 and saved MLflow traceability fields in `selected_model_metadata`: `optuna_parent_run_id`, per-trial `mlflow_run_id`, and `model_artifact_logged: true` for the best trial. The full default pipeline was not rerun to completion because it is long-running and the user requested short verification only.
+- `uv run pytest tests\pipelines\model_selection tests\pipelines\model_train -q` passed on 2026-06-29 with 9 tests after adding Optuna model and hyperparameter search.
+- `uv run ruff format src\mlops_project\pipelines tests` and `uv run ruff check src\mlops_project\pipelines tests` passed on 2026-06-29 after adding Optuna search.
+- `uv run kedro run --pipeline model_selection` passed on 2026-06-29 with 50 Optuna trials. Fixed candidate RMSEs were: `dummy` 3.1221, `ridge` 2.4304, `elastic_net` 2.4307, `random_forest` 2.3763, `extra_trees` 2.4298, and `hist_gradient_boosting` 2.3760. Optuna selected `random_forest` trial 10 with RMSE 2.3700 using `n_estimators: 80`, `max_depth: 22`, `min_samples_leaf: 4`, and `max_features: sqrt`.
+- `uv run kedro run --pipeline production_full_train_process` passed on 2026-06-29 after adding Optuna search and trained the tuned `random_forest` model with validation RMSE 2.3700, MAE 1.2821, median AE 0.7290, and R2 0.4237.
+- `uv run pytest tests -q` passed on 2026-06-29 with 40 tests after adding Optuna model and hyperparameter search.
+- `uv run pytest tests\pipelines\model_selection tests\pipelines\model_train -q` passed on 2026-06-29 with 7 tests after expanding model selection across sklearn candidates.
+- `uv run pytest tests -q` passed on 2026-06-29 with 38 tests after expanding model selection across sklearn candidates.
+- `uv run ruff format src\mlops_project\pipelines tests` and `uv run ruff check src\mlops_project\pipelines tests` passed on 2026-06-29 after the model-selection expansion.
+- `uv run kedro run --pipeline model_selection` passed on 2026-06-29 with six candidates: `dummy` reference RMSE 3.1221, `ridge` RMSE 2.4304, `elastic_net` RMSE 2.4307, `random_forest` RMSE 2.3766, `extra_trees` RMSE 2.4288, and `hist_gradient_boosting` RMSE 2.3774. The selected eligible candidate was `random_forest`.
+- `uv run kedro run --pipeline production_full_train_process` passed on 2026-06-29 after the model-selection expansion and trained the selected `random_forest` model with validation RMSE 2.3766.
 - `uv run kedro registry list` passed on 2026-06-29 after the catalog folder reordering and still lists the active Green Taxi base and composite pipelines.
 - `uv run pytest tests -q` passed on 2026-06-29 after the catalog folder reordering with 35 tests.
 - `uv run ruff format src\mlops_project\pipelines tests` passed on 2026-06-29 for the bank-example style pipeline/test scope.
@@ -116,6 +139,7 @@ Locked decisions:
 - Current train/test split parameter: `train_test_split_date: "2025-07-01"`.
 - Current train/validation split parameter: `train_val_split_date: "2025-01-01"`.
 - Current catalog convention: `03_primary` stores split raw analytical tables, `04_feature` stores reusable preprocessing and selected-column artifacts, `05_model_input` stores preprocessed feature matrices consumed by model nodes, `07_model_output` stores predictions, and `08_reporting` stores metrics, reports, plots, and validation summaries.
+- Current model-selection policy: compare sklearn-only candidates configured in `parameters_model_selection.yml` such as `dummy`, `linear_regression`, `random_forest`, `extra_trees`, and `hist_gradient_boosting`; keep `dummy` as a metrics-only baseline with `eligible: false`; when enabled, run Optuna across all eligible candidates, log each Optuna trial to MLflow with train and validation scores, and pass the tuned winning parameters to `model_train`.
 - Hopsworks is optional and controlled by configuration. Keep credentials out of version control.
 - Final notebook outputs should remain visible after reviewed reruns.
 
