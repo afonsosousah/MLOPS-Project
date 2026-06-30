@@ -17,7 +17,7 @@ tracking:
   experiment:
     name: green_taxi_tip_amount
     create_experiment_kwargs:
-      artifact_location: null
+      artifact_location: mlruns
       tags: null
     restore_if_deleted: true
   run:

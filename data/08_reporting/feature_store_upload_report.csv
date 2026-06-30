@@ -1,2 +1,6 @@
 status,rows,feature_group,version,message
+<<<<<<< Updated upstream
 uploaded,802481,green_taxi_features,2,Uploaded 802481 rows to Hopsworks feature group.
+=======
+skipped,802481,green_taxi_features,1,Feature-store upload skipped because feature_store.enabled is false.
+>>>>>>> Stashed changes
