@@ -36,7 +36,7 @@ def test_feature_store_upload_skips_when_disabled() -> None:
 def test_feature_store_pipeline_writes_skip_report_when_disabled() -> None:
     catalog = DataCatalog(
         {
-            "X_train_preprocessed": MemoryDataset(data=_engineered_data()),
+            "data_clean": MemoryDataset(data=_engineered_data()),
             "params:feature_store": MemoryDataset(data=FEATURE_STORE_PARAMS),
             "feature_store_upload_report": MemoryDataset(),
         }

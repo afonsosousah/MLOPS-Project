@@ -6,19 +6,7 @@ from kedro.runner import SequentialRunner
 from mlops_project.pipelines.split_data import create_pipeline
 from mlops_project.pipelines.split_data.nodes import split_data
 
-SPLIT_PARAMS = {
-    "min_pickup_datetime": "2024-01-01",
-    "min_trip_distance": 0,
-    "max_trip_distance": 100,
-    "min_fare_amount": 0,
-    "max_fare_amount": 500,
-    "min_duration_min": 1,
-    "max_duration_min": 180,
-    "min_tip_amount": 0,
-    "max_tip_amount": 200,
-    "min_location_id": 1,
-    "max_location_id": 263,
-}
+FEATURE_STORE_PARAMS = {"use_feature_store": False}
 
 
 def _ingested_data() -> pd.DataFrame:
@@ -58,7 +46,7 @@ def _ingested_data() -> pd.DataFrame:
 
 
 def test_split_data_creates_chronological_train_and_test() -> None:
-    train_data, test_data = split_data(_ingested_data(), "2025-07-01", SPLIT_PARAMS)
+    train_data, test_data = split_data(_ingested_data(), "2025-07-01")
 
     assert train_data["tip_amount"].tolist() == [2.0]
     assert test_data["tip_amount"].tolist() == [3.0]
@@ -68,15 +56,15 @@ def test_split_data_creates_chronological_train_and_test() -> None:
 
 def test_split_data_raises_for_empty_side() -> None:
     with pytest.raises(ValueError, match="empty train or test"):
-        split_data(_ingested_data(), "2023-01-01", SPLIT_PARAMS)
+        split_data(_ingested_data(), "2023-01-01")
 
 
 def test_split_data_pipeline_creates_train_and_test_outputs() -> None:
     catalog = DataCatalog(
         {
-            "ingested_data": MemoryDataset(data=_ingested_data()),
+            "data_clean": MemoryDataset(data=_ingested_data()),
+            "params:feature_store": MemoryDataset(data=FEATURE_STORE_PARAMS),
             "params:train_test_split_date": MemoryDataset(data="2025-07-01"),
-            "params:preprocessing": MemoryDataset(data=SPLIT_PARAMS),
             "train_data": MemoryDataset(),
             "test_data": MemoryDataset(),
         }

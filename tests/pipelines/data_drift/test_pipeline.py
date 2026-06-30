@@ -182,7 +182,9 @@ def test_detect_drift_returns_report_summary_and_transformed_drift_batch() -> No
     assert report.columns.tolist() == REPORT_COLUMNS
     assert {"univariate", "data_reconstruction"}.issubset(set(report["drift_method"]))
     assert summary["current_rows"] == DRIFT_ROW_COUNT
-    assert summary["drift_is_blocking"] is False
+    assert set(summary["alert_counts_by_method"]).issubset(
+        {"univariate", "data_reconstruction"}
+    )
     assert drift_preprocessed.columns.tolist() == production_columns
     assert len(drift_preprocessed) == DRIFT_ROW_COUNT
 

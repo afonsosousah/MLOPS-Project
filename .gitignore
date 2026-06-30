@@ -159,3 +159,8 @@ class_materials
 .agents
 /tmp
 data/06_models/production_model.pkl
+AGENTS.md
+
+/docs/**
+!/docs/source/
+!/docs/source/**

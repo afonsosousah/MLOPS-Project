@@ -8,6 +8,7 @@ def test_registered_pipelines_are_green_taxi_only():
         "__default__",
         "data_drift",
         "data_quality",
+        "data_cleaning",
         "data_unit_tests",
         "drift_monitoring",
         "feature_selection",
@@ -25,7 +26,6 @@ def test_registered_pipelines_are_green_taxi_only():
     }
 
     assert expected.issubset(pipelines)
-    assert "data_cleaning" not in pipelines
     assert "feature_engineering" not in pipelines
     assert not any(name.startswith("example_") for name in pipelines)
 
@@ -46,8 +46,8 @@ def test_default_pipeline_contains_bank_example_style_nodes():
         "preprocessing_batch_node",
         "model_predict_node",
         "detect_drift_node",
+        "upload_features_to_store_node",
     }.issubset(node_names)
-    assert "upload_features_to_store_node" not in node_names
 
 
 def test_data_quality_pipeline_includes_ingestion_inputs():
@@ -61,12 +61,12 @@ def test_data_quality_pipeline_includes_ingestion_inputs():
     }.issubset(node_names)
 
 
-def test_feature_store_pipeline_is_separate_from_default():
+def test_feature_store_pipeline_is_registered_and_present_in_default():
     pipelines = register_pipelines()
 
     assert {node.name for node in pipelines["feature_store"].nodes} == {
         "upload_features_to_store_node"
     }
-    assert "upload_features_to_store_node" not in {
+    assert "upload_features_to_store_node" in {
         node.name for node in pipelines["__default__"].nodes
     }
