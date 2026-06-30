@@ -113,8 +113,13 @@ def upload_features_to_store(
             "statistics_config",
             {"enabled": True, "histograms": True, "correlations": True},
         )
-        feature_group.update_statistics_config()
-        feature_group.compute_statistics()
+        try:
+            feature_group.update_statistics_config()
+            feature_group.compute_statistics()
+        except Exception as exc:
+            logger.warning(
+                "Could not compute feature group statistics (non-fatal): %s", exc
+            )
 
     message = f"Uploaded {len(features)} rows to Hopsworks feature group."
     logger.info(

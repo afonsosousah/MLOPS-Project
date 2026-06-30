@@ -14,7 +14,7 @@ def create_pipeline(**kwargs) -> Pipeline:
             ),
             node(
                 func=split_data,
-                inputs=["features_from_store", "params:split_date"],
+                inputs=["features_from_store", "params:train_test_split_date"],
                 outputs=["train_data", "test_data"],
                 name="split_data_node",
             ),

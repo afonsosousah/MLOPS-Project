@@ -96,3 +96,28 @@ For this project, keep final notebook outputs visible after a clean rerun. The s
 ## Package your Kedro project
 
 [Further information about building project documentation and packaging your project](https://docs.kedro.org/en/stable/tutorial/package_a_project.html)
+
+## Serve the model (FastAPI + Docker)
+
+Run the training pipeline first to generate model artefacts, then:
+
+```bash
+docker build -t green-taxi-api .
+docker run -p 8000:8000 -v "$(pwd)/data:/app/data" green-taxi-api
+```
+
+Endpoints:
+- `GET  http://localhost:8000/health` — health check
+- `POST http://localhost:8000/predict` — predict tip amount for a trip
+- `GET  http://localhost:8000/docs` — Swagger UI (interactive)
+
+## Hopsworks (feature store)
+
+The feature store is **disabled by default**. To enable it, set the following environment variables:
+
+```bash
+export FS_API_KEY=your_hopsworks_api_key
+export FS_PROJECT_NAME=your_project_name
+```
+
+Then in `conf/base/parameters_feature_store.yml` set `enabled: true` and `use_feature_store: true`.
