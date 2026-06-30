@@ -131,11 +131,9 @@ predict_describe:
   type: json.JSONDataset
   filepath: data/08_reporting/predict_describe.json
 
-output_plot:
-  type: kedro_mlflow.io.artifacts.MlflowArtifactDataset
-  dataset:
-    type: kedro_datasets.matplotlib.MatplotlibDataset
-    filepath: data/08_reporting/feature_importance.png
+model_explainability_metadata:
+  type: json.JSONDataset
+  filepath: data/08_reporting/model_explainability_metadata.json
 
 drift_report:
   type: pandas.CSVDataset

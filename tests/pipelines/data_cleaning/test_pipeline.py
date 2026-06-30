@@ -3,6 +3,8 @@ import pytest
 
 from mlops_project.pipelines.data_cleaning.nodes import data_cleaning
 
+FLOAT_TOLERANCE = 0.1
+
 
 BASE_ROW = {
     "VendorID": 2,
@@ -69,7 +71,9 @@ def test_data_cleaning_adds_engineered_features(raw_trip):
         "is_airport",
         "trip_id",
     ]:
-        assert col in result.columns, f"Expected engineered column '{col}' not in result"
+        assert col in result.columns, (
+            f"Expected engineered column '{col}' not in result"
+        )
 
 
 def test_data_cleaning_filters_non_credit_card():
@@ -98,4 +102,4 @@ def test_data_cleaning_filters_short_trips():
 
 def test_data_cleaning_trip_duration_correct(raw_trip):
     result = data_cleaning(raw_trip, PARAMETERS)
-    assert abs(result["trip_duration_min"].iloc[0] - 20.0) < 0.1
+    assert abs(result["trip_duration_min"].iloc[0] - 20.0) < FLOAT_TOLERANCE

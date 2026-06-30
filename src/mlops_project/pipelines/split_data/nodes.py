@@ -1,12 +1,11 @@
-import logging
-from typing import Any
 import importlib
+import logging
 import os
+from typing import Any
 
 import pandas as pd
 
 logger = logging.getLogger(__name__)
-
 
 
 def _load_dotenv_if_available() -> None:
@@ -25,9 +24,7 @@ def read_features_from_store(parameters: dict[str, Any]) -> pd.DataFrame:
         parameters.get("credential_env_vars", {}).get("api_key", "FS_API_KEY")
     )
     project_name = os.getenv(
-        parameters.get("credential_env_vars", {}).get(
-            "project_name", "FS_PROJECT_NAME"
-        )
+        parameters.get("credential_env_vars", {}).get("project_name", "FS_PROJECT_NAME")
     )
     if not api_key or not project_name:
         raise ValueError("Missing Hopsworks credentials in environment variables.")
@@ -53,7 +50,6 @@ def read_features_from_store(parameters: dict[str, Any]) -> pd.DataFrame:
     return data
 
 
-
 def get_features(
     parameters: dict[str, Any],
     local_features: pd.DataFrame | None = None,
@@ -70,11 +66,6 @@ def get_features(
         return local_features
 
     return read_features_from_store(parameters)
-
-
-
-
-
 
 
 def split_data(

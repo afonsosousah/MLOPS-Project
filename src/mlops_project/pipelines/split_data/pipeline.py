@@ -1,6 +1,6 @@
 from kedro.pipeline import Pipeline, node, pipeline
 
-from .nodes import split_data, get_features
+from .nodes import get_features, split_data
 
 
 def create_pipeline(**kwargs) -> Pipeline:

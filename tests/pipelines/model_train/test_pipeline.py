@@ -3,6 +3,7 @@ from kedro.io import DataCatalog, MemoryDataset
 from kedro.runner import SequentialRunner
 
 from mlops_project.pipelines.model_train import create_pipeline
+from mlops_project.pipelines.model_train import nodes as model_train_nodes
 from mlops_project.pipelines.model_train.nodes import model_train
 
 TUNED_RIDGE_ALPHA = 7.0
@@ -33,6 +34,11 @@ def _model_train_params(tmp_path):
             "n_jobs": 1,
         },
         "feature_importance_sample_size": 4,
+        "feature_importance_max_display": 2,
+        "shap_sample_size": 3,
+        "shap_background_sample_size": 3,
+        "shap_max_display": 2,
+        "explainability_random_state": 42,
     }
 
 
@@ -46,13 +52,55 @@ MODEL_SELECTION_PARAMS = {
             "type": "ridge",
             "eligible": True,
             "params": {"alpha": 1.0},
-        }
+        },
+        "random_forest": {
+            "type": "random_forest",
+            "eligible": True,
+            "params": {
+                "n_estimators": 5,
+                "max_depth": 3,
+                "random_state": 42,
+                "n_jobs": 1,
+            },
+        },
+        "dummy": {
+            "type": "dummy",
+            "eligible": False,
+            "params": {"strategy": "mean"},
+        },
     }
 }
 
 
-def test_model_train_consumes_preprocessed_features(tmp_path) -> None:
-    model, metrics, predictions, plot = model_train(
+def _redirect_explainability_paths(monkeypatch, tmp_path) -> None:
+    reporting_dir = tmp_path / "reporting"
+    monkeypatch.setattr(model_train_nodes, "REPORTING_DIR", reporting_dir)
+    monkeypatch.setattr(
+        model_train_nodes,
+        "FEATURE_IMPORTANCE_PLOT_PATH",
+        reporting_dir / "feature_importance.png",
+    )
+    monkeypatch.setattr(
+        model_train_nodes,
+        "FEATURE_IMPORTANCE_TABLE_PATH",
+        reporting_dir / "feature_importance.csv",
+    )
+    monkeypatch.setattr(
+        model_train_nodes,
+        "SHAP_SUMMARY_PLOT_PATH",
+        reporting_dir / "shap_summary.png",
+    )
+    monkeypatch.setattr(
+        model_train_nodes,
+        "SHAP_SUMMARY_TABLE_PATH",
+        reporting_dir / "shap_summary.csv",
+    )
+
+
+def test_model_train_consumes_preprocessed_features(tmp_path, monkeypatch) -> None:
+    _redirect_explainability_paths(monkeypatch, tmp_path)
+
+    model, metrics, predictions, explainability_metadata = model_train(
         _X(),
         _X(),
         _y(),
@@ -82,10 +130,17 @@ def test_model_train_consumes_preprocessed_features(tmp_path) -> None:
         "predicted_tip_amount",
         "residual",
     ]
-    assert plot is not None
+    assert explainability_metadata["feature_importance"]["generated"] is True
+    assert explainability_metadata["feature_importance"]["method"] == "absolute_coef_"
+    assert explainability_metadata["shap"]["generated"] is True
+    assert explainability_metadata["shap"]["method"] == "linear_explainer"
+    assert (tmp_path / "reporting" / "feature_importance.png").exists()
+    assert (tmp_path / "reporting" / "shap_summary.png").exists()
 
 
-def test_model_train_pipeline_creates_outputs(tmp_path) -> None:
+def test_model_train_pipeline_creates_outputs(tmp_path, monkeypatch) -> None:
+    _redirect_explainability_paths(monkeypatch, tmp_path)
+
     catalog = DataCatalog(
         {
             "X_train_preprocessed": MemoryDataset(data=_X()),
@@ -109,7 +164,7 @@ def test_model_train_pipeline_creates_outputs(tmp_path) -> None:
             "production_model": MemoryDataset(),
             "production_model_metrics": MemoryDataset(),
             "validation_predictions": MemoryDataset(),
-            "output_plot": MemoryDataset(),
+            "model_explainability_metadata": MemoryDataset(),
         }
     )
 
@@ -121,3 +176,75 @@ def test_model_train_pipeline_creates_outputs(tmp_path) -> None:
     assert "validation_rmse" in production_metrics
     assert catalog.load("production_model").alpha == TUNED_RIDGE_ALPHA
     assert not catalog.load("validation_predictions").empty
+    assert catalog.load("model_explainability_metadata")["shap"]["generated"] is True
+
+
+def test_model_train_writes_tree_importance_and_shap(tmp_path, monkeypatch) -> None:
+    _redirect_explainability_paths(monkeypatch, tmp_path)
+
+    _, _, _, explainability_metadata = model_train(
+        _X(),
+        _X(),
+        _y(),
+        _y(),
+        ["feature_a", "feature_b"],
+        {
+            "selected_model_name": "random_forest",
+            "selected_model_type": "random_forest",
+            "selected_model_params": {
+                "n_estimators": 5,
+                "max_depth": 3,
+                "random_state": 42,
+                "n_jobs": 1,
+            },
+        },
+        _model_train_params(tmp_path),
+        MODEL_SELECTION_PARAMS,
+        _mlflow_tracking_uri(tmp_path),
+        TEST_EXPERIMENT_NAME,
+    )
+
+    assert explainability_metadata["feature_importance"]["generated"] is True
+    assert (
+        explainability_metadata["feature_importance"]["method"]
+        == "feature_importances_"
+    )
+    assert explainability_metadata["shap"]["generated"] is True
+    assert explainability_metadata["shap"]["method"] == "tree_explainer"
+    assert (tmp_path / "reporting" / "feature_importance.csv").exists()
+    assert (tmp_path / "reporting" / "shap_summary.csv").exists()
+
+
+def test_model_train_skips_explainability_for_unsupported_model(
+    tmp_path,
+    monkeypatch,
+) -> None:
+    _redirect_explainability_paths(monkeypatch, tmp_path)
+
+    model, _, _, explainability_metadata = model_train(
+        _X(),
+        _X(),
+        _y(),
+        _y(),
+        ["feature_a", "feature_b"],
+        {
+            "selected_model_name": "dummy",
+            "selected_model_type": "dummy",
+            "selected_model_params": {"strategy": "mean"},
+        },
+        _model_train_params(tmp_path),
+        MODEL_SELECTION_PARAMS,
+        _mlflow_tracking_uri(tmp_path),
+        TEST_EXPERIMENT_NAME,
+    )
+
+    assert model.__class__.__name__ == "DummyRegressor"
+    assert explainability_metadata["feature_importance"]["generated"] is False
+    assert explainability_metadata["shap"]["generated"] is False
+    assert (
+        "does not expose"
+        in explainability_metadata["feature_importance"]["skip_reason"]
+    )
+    assert "not configured for SHAP" in explainability_metadata["shap"]["skip_reason"]
+    assert not (tmp_path / "reporting" / "feature_importance.png").exists()
+    assert not (tmp_path / "reporting" / "shap_summary.png").exists()

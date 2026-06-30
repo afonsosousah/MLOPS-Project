@@ -1,4 +1,5 @@
 import logging
+from pathlib import Path
 from typing import Any
 
 import matplotlib
@@ -10,7 +11,7 @@ import mlflow
 import mlflow.sklearn as mlflow_sklearn
 import numpy as np
 import pandas as pd
-from sklearn.inspection import permutation_importance
+import shap
 from sklearn.metrics import (
     mean_absolute_error,
     median_absolute_error,
@@ -26,6 +27,22 @@ from mlops_project.pipelines.model_selection.nodes import (
 logger = logging.getLogger(__name__)
 
 MLFLOW_MODEL_SERIALIZATION_FORMAT = mlflow_sklearn.SERIALIZATION_FORMAT_CLOUDPICKLE
+REPORTING_DIR = Path("data/08_reporting")
+FEATURE_IMPORTANCE_PLOT_PATH = REPORTING_DIR / "feature_importance.png"
+FEATURE_IMPORTANCE_TABLE_PATH = REPORTING_DIR / "feature_importance.csv"
+SHAP_SUMMARY_PLOT_PATH = REPORTING_DIR / "shap_summary.png"
+SHAP_SUMMARY_TABLE_PATH = REPORTING_DIR / "shap_summary.csv"
+MULTI_OUTPUT_SHAP_DIMENSIONS = 3
+TREE_SHAP_MODEL_TYPES = {
+    "random_forest",
+    "extra_trees",
+    "hist_gradient_boosting",
+}
+LINEAR_SHAP_MODEL_TYPES = {
+    "linear_regression",
+    "ridge",
+    "elastic_net",
+}
 
 
 def _evaluate_predictions(y_true: pd.Series, y_pred: np.ndarray) -> dict[str, float]:
@@ -90,15 +107,47 @@ def _model_params(
     return selected_name, model_type, params, candidate
 
 
-def _feature_importance_plot(
+def _sample_frame(
+    data: pd.DataFrame,
+    sample_size: int,
+    random_state: int,
+) -> pd.DataFrame:
+    sample_rows = min(sample_size, len(data))
+    if sample_rows <= 0:
+        return data.iloc[0:0, :].copy()
+    if sample_rows == len(data):
+        sample = data
+    else:
+        sample = data.sample(n=sample_rows, random_state=random_state)
+    return sample.reset_index(drop=True)
+
+
+def _dense_numeric_frame(data: pd.DataFrame) -> pd.DataFrame:
+    dense = np.asarray(data, dtype=float)
+    return pd.DataFrame(dense, columns=data.columns)
+
+
+def _clear_conditional_explainability_artifacts() -> None:
+    for path in (
+        FEATURE_IMPORTANCE_PLOT_PATH,
+        FEATURE_IMPORTANCE_TABLE_PATH,
+        SHAP_SUMMARY_PLOT_PATH,
+        SHAP_SUMMARY_TABLE_PATH,
+    ):
+        path.unlink(missing_ok=True)
+
+
+def _artifact_path(path: Path) -> str:
+    return path.as_posix()
+
+
+def _save_feature_importance(
     model: Any,
     columns: list[str],
-    X_val: pd.DataFrame,
-    y_val: pd.Series,
     parameters: dict[str, Any],
-):
+    selected_type: str,
+) -> dict[str, Any]:
     max_display = parameters.get("feature_importance_max_display", 20)
-    sample_size = parameters.get("feature_importance_sample_size", 1000)
     if hasattr(model, "feature_importances_"):
         values = np.asarray(model.feature_importances_, dtype=float)
         title = "Top Feature Importances"
@@ -106,32 +155,158 @@ def _feature_importance_plot(
         values = np.abs(np.ravel(model.coef_).astype(float))
         title = "Top Absolute Coefficients"
     else:
-        sample_rows = min(sample_size, len(X_val))
-        X_sample = X_val.iloc[:sample_rows, :]
-        y_sample = y_val.iloc[:sample_rows]
-        result = permutation_importance(
-            model,
-            X_sample,
-            y_sample,
-            n_repeats=5,
-            random_state=42,
-            scoring="neg_root_mean_squared_error",
-        )
-        values = np.asarray(result.importances_mean, dtype=float)
-        title = "Top Permutation Importances"
+        return {
+            "generated": False,
+            "method": None,
+            "skip_reason": (
+                f"Selected model type '{selected_type}' does not expose "
+                "feature_importances_ or coef_."
+            ),
+            "plot_path": None,
+            "table_path": None,
+        }
 
     if len(values) != len(columns):
         raise ValueError("Feature importance length does not match selected columns.")
 
-    importances = pd.Series(values, index=columns)
-    top_importances = importances.sort_values(ascending=False).head(max_display)
+    importances = pd.DataFrame(
+        {
+            "feature": columns,
+            "importance": values,
+        }
+    ).sort_values("importance", ascending=False)
+    importances.to_csv(FEATURE_IMPORTANCE_TABLE_PATH, index=False)
+    top_importances = importances.head(max_display).set_index("feature")["importance"]
 
     fig, ax = plt.subplots(figsize=(10, 6))
     top_importances.sort_values().plot.barh(ax=ax)
     ax.set_title(title)
     ax.set_xlabel("Importance")
     fig.tight_layout()
-    return fig
+    fig.savefig(FEATURE_IMPORTANCE_PLOT_PATH, dpi=150)
+    plt.close(fig)
+
+    return {
+        "generated": True,
+        "method": "feature_importances_"
+        if hasattr(model, "feature_importances_")
+        else "absolute_coef_",
+        "skip_reason": None,
+        "plot_path": _artifact_path(FEATURE_IMPORTANCE_PLOT_PATH),
+        "table_path": _artifact_path(FEATURE_IMPORTANCE_TABLE_PATH),
+    }
+
+
+def _save_shap_explainability(
+    model: Any,
+    X_train: pd.DataFrame,
+    X_val: pd.DataFrame,
+    parameters: dict[str, Any],
+    selected_type: str,
+) -> dict[str, Any]:
+    random_state = parameters.get("explainability_random_state", 42)
+    shap_sample_size = parameters.get("shap_sample_size", 25)
+    background_sample_size = parameters.get("shap_background_sample_size", 100)
+    max_display = parameters.get("shap_max_display", 20)
+
+    X_explain = _dense_numeric_frame(
+        _sample_frame(X_val, shap_sample_size, random_state)
+    )
+    if X_explain.empty:
+        return {
+            "generated": False,
+            "method": None,
+            "skip_reason": "No validation rows are available for SHAP.",
+            "plot_path": None,
+            "table_path": None,
+            "sample_size": 0,
+            "background_sample_size": 0,
+        }
+
+    if selected_type in TREE_SHAP_MODEL_TYPES:
+        explainer = shap.TreeExplainer(model)
+        explanation = explainer(X_explain)
+        method = "tree_explainer"
+        background_rows = 0
+    elif selected_type in LINEAR_SHAP_MODEL_TYPES:
+        background = _dense_numeric_frame(
+            _sample_frame(X_train, background_sample_size, random_state)
+        )
+        explainer = shap.LinearExplainer(model, background)
+        explanation = explainer(X_explain)
+        method = "linear_explainer"
+        background_rows = len(background)
+    else:
+        return {
+            "generated": False,
+            "method": None,
+            "skip_reason": f"Selected model type '{selected_type}' is not configured for SHAP.",
+            "plot_path": None,
+            "table_path": None,
+            "sample_size": len(X_explain),
+            "background_sample_size": 0,
+        }
+
+    shap_values = np.asarray(explanation.values, dtype=float)
+    if shap_values.ndim == MULTI_OUTPUT_SHAP_DIMENSIONS:
+        shap_values = shap_values[:, :, 0]
+    mean_abs_shap = np.abs(shap_values).mean(axis=0)
+    shap_summary = pd.DataFrame(
+        {
+            "feature": X_explain.columns,
+            "mean_absolute_shap": mean_abs_shap,
+        }
+    ).sort_values("mean_absolute_shap", ascending=False)
+    shap_summary.to_csv(SHAP_SUMMARY_TABLE_PATH, index=False)
+
+    shap.plots.beeswarm(explanation, max_display=max_display, show=False)
+    fig = plt.gcf()
+    fig.tight_layout()
+    fig.savefig(SHAP_SUMMARY_PLOT_PATH, dpi=150, bbox_inches="tight")
+    plt.close(fig)
+
+    return {
+        "generated": True,
+        "method": method,
+        "skip_reason": None,
+        "plot_path": _artifact_path(SHAP_SUMMARY_PLOT_PATH),
+        "table_path": _artifact_path(SHAP_SUMMARY_TABLE_PATH),
+        "sample_size": len(X_explain),
+        "background_sample_size": background_rows,
+    }
+
+
+def _save_explainability_artifacts(  # noqa: PLR0913
+    model: Any,
+    columns: list[str],
+    X_train: pd.DataFrame,
+    X_val: pd.DataFrame,
+    parameters: dict[str, Any],
+    selected_name: str,
+    selected_type: str,
+) -> dict[str, Any]:
+    _clear_conditional_explainability_artifacts()
+    REPORTING_DIR.mkdir(parents=True, exist_ok=True)
+
+    feature_importance = _save_feature_importance(
+        model,
+        columns,
+        parameters,
+        selected_type,
+    )
+    shap_metadata = _save_shap_explainability(
+        model,
+        X_train,
+        X_val,
+        parameters,
+        selected_type,
+    )
+    return {
+        "selected_model_name": selected_name,
+        "selected_model_type": selected_type,
+        "feature_importance": feature_importance,
+        "shap": shap_metadata,
+    }
 
 
 def model_train(  # noqa: PLR0913
@@ -194,16 +369,18 @@ def model_train(  # noqa: PLR0913
         )
 
     predictions = _validation_predictions(y_val_series, y_pred)
-    plot = _feature_importance_plot(
+    explainability_metadata = _save_explainability_artifacts(
         model,
         columns,
+        X_train_selected,
         X_val_selected,
-        y_val_series,
         model_train_parameters,
+        selected_name,
+        selected_type,
     )
     logger.info(
         "Train RMSE: %.4f; validation RMSE: %.4f",
         metrics["train_metrics"]["rmse"],
         metrics["validation_metrics"]["rmse"],
     )
-    return model, metrics, predictions, plot
+    return model, metrics, predictions, explainability_metadata

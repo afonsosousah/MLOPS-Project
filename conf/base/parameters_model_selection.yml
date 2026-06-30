@@ -1,6 +1,6 @@
 model_selection:
   enabled: true
-  metric: rmse
+  metric: mae
   search:
     enabled: true
     n_trials: 50

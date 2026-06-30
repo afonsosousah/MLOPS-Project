@@ -24,7 +24,7 @@ def create_pipeline(**kwargs) -> Pipeline:
                     "production_model",
                     "production_model_metrics",
                     "validation_predictions",
-                    "output_plot",
+                    "model_explainability_metadata",
                 ],
                 name="model_train_node",
             ),

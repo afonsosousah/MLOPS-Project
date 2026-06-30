@@ -1,4 +1,8 @@
 model_train:
   target_col: tip_amount
   shap_sample_size: 25
+  shap_background_sample_size: 100
+  shap_max_display: 20
+  feature_importance_max_display: 20
   feature_importance_sample_size: 1000
+  explainability_random_state: 42
