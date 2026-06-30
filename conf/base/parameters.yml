@@ -2,6 +2,7 @@
 
 # Chronological splits
 train_test_split_date: "2025-07-01"
+split_date: "2025-07-01"
 train_val_split_date: "2025-01-01"
 target_column: "tip_amount"
 

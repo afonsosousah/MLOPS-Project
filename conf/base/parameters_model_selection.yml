@@ -1,19 +1,103 @@
 model_selection:
   enabled: true
   metric: rmse
-  max_rows: 50000
+  search:
+    enabled: true
+    n_trials: 50
+    direction: minimize
+    sampler: tpe
+    random_state: 42
   candidates:
-    random_forest_baseline:
-      n_estimators: 80
-      max_depth: 12
-      min_samples_leaf: 10
-      max_features: sqrt
-      random_state: 42
-      n_jobs: -1
-    random_forest_current:
-      n_estimators: 120
-      max_depth: 16
-      min_samples_leaf: 8
-      max_features: sqrt
-      random_state: 42
-      n_jobs: -1
+    dummy:
+      type: dummy
+      eligible: false
+      params:
+        strategy: mean
+    linear_regression:
+      type: linear_regression
+      eligible: true
+      params:
+        fit_intercept: true
+    random_forest:
+      type: random_forest
+      eligible: true
+      params:
+        n_estimators: 200
+        max_depth: 16
+        min_samples_leaf: 8
+        max_features: sqrt
+        random_state: 42
+        n_jobs: -1
+      search_space:
+        n_estimators:
+          type: int
+          low: 200
+          high: 500
+          step: 50
+        max_depth:
+          type: categorical
+          choices: [10, 14, 18, 22]
+        min_samples_leaf:
+          type: int
+          low: 4
+          high: 20
+        max_features:
+          type: categorical
+          choices: [sqrt, 0.5, 0.8]
+    extra_trees:
+      type: extra_trees
+      eligible: true
+      params:
+        n_estimators: 200
+        max_depth: 16
+        min_samples_leaf: 8
+        max_features: sqrt
+        random_state: 42
+        n_jobs: -1
+      search_space:
+        n_estimators:
+          type: int
+          low: 200
+          high: 500
+          step: 50
+        max_depth:
+          type: categorical
+          choices: [10, 14, 18, 22]
+        min_samples_leaf:
+          type: int
+          low: 4
+          high: 20
+        max_features:
+          type: categorical
+          choices: [sqrt, 0.5, 0.8]
+    hist_gradient_boosting:
+      type: hist_gradient_boosting
+      eligible: true
+      params:
+        max_iter: 200
+        learning_rate: 0.08
+        max_leaf_nodes: 31
+        min_samples_leaf: 30
+        l2_regularization: 0.0
+        random_state: 42
+      search_space:
+        max_iter:
+          type: int
+          low: 200
+          high: 500
+          step: 50
+        learning_rate:
+          type: float
+          low: 0.01
+          high: 0.15
+        max_leaf_nodes:
+          type: categorical
+          choices: [15, 31, 63]
+        min_samples_leaf:
+          type: int
+          low: 15
+          high: 80
+        l2_regularization:
+          type: float
+          low: 0.0
+          high: 1.0

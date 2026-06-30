@@ -17,6 +17,8 @@ def create_pipeline(**kwargs) -> Pipeline:
                     "selected_model_metadata",
                     "params:model_train",
                     "params:model_selection",
+                    "params:mlflow_tracking_uri",
+                    "params:mlflow_experiment_name",
                 ],
                 outputs=[
                     "production_model",

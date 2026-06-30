@@ -5,6 +5,9 @@ from kedro.runner import SequentialRunner
 from mlops_project.pipelines.model_train import create_pipeline
 from mlops_project.pipelines.model_train.nodes import model_train
 
+TUNED_RIDGE_ALPHA = 7.0
+TEST_EXPERIMENT_NAME = "test_green_taxi_model_train"
+
 
 def _X() -> pd.DataFrame:
     return pd.DataFrame(
@@ -22,25 +25,27 @@ def _y() -> pd.DataFrame:
 def _model_train_params(tmp_path):
     return {
         "target_col": "tip_amount",
-        "mlflow_tracking_uri": f"sqlite:///{tmp_path / 'mlflow.db'}",
-        "mlflow_experiment_name": "test_green_taxi",
-        "selected_model_name": "small_rf",
+        "selected_model_name": "ridge",
         "model_params": {
             "n_estimators": 5,
             "max_depth": 3,
             "random_state": 42,
             "n_jobs": 1,
         },
+        "feature_importance_sample_size": 4,
     }
+
+
+def _mlflow_tracking_uri(tmp_path) -> str:
+    return f"sqlite:///{tmp_path / 'mlflow.db'}"
 
 
 MODEL_SELECTION_PARAMS = {
     "candidates": {
-        "small_rf": {
-            "n_estimators": 5,
-            "max_depth": 3,
-            "random_state": 42,
-            "n_jobs": 1,
+        "ridge": {
+            "type": "ridge",
+            "eligible": True,
+            "params": {"alpha": 1.0},
         }
     }
 }
@@ -53,13 +58,25 @@ def test_model_train_consumes_preprocessed_features(tmp_path) -> None:
         _y(),
         _y(),
         ["feature_a", "feature_b"],
-        {"selected_model_name": "small_rf"},
+        {
+            "selected_model_name": "ridge",
+            "selected_model_type": "ridge",
+            "selected_model_params": {"alpha": TUNED_RIDGE_ALPHA},
+        },
         _model_train_params(tmp_path),
         MODEL_SELECTION_PARAMS,
+        _mlflow_tracking_uri(tmp_path),
+        TEST_EXPERIMENT_NAME,
     )
 
     assert hasattr(model, "predict")
+    assert model.__class__.__name__ == "Ridge"
+    assert model.alpha == TUNED_RIDGE_ALPHA
     assert "rmse" in metrics
+    assert "train_rmse" in metrics
+    assert "validation_rmse" in metrics
+    assert "rmse" in metrics["train_metrics"]
+    assert "rmse" in metrics["validation_metrics"]
     assert predictions.columns.tolist() == [
         "actual_tip_amount",
         "predicted_tip_amount",
@@ -77,10 +94,18 @@ def test_model_train_pipeline_creates_outputs(tmp_path) -> None:
             "y_val_data": MemoryDataset(data=_y()),
             "best_columns": MemoryDataset(data=["feature_a", "feature_b"]),
             "selected_model_metadata": MemoryDataset(
-                data={"selected_model_name": "small_rf"}
+                data={
+                    "selected_model_name": "ridge",
+                    "selected_model_type": "ridge",
+                    "selected_model_params": {"alpha": TUNED_RIDGE_ALPHA},
+                }
             ),
             "params:model_train": MemoryDataset(data=_model_train_params(tmp_path)),
             "params:model_selection": MemoryDataset(data=MODEL_SELECTION_PARAMS),
+            "params:mlflow_tracking_uri": MemoryDataset(
+                data=_mlflow_tracking_uri(tmp_path)
+            ),
+            "params:mlflow_experiment_name": MemoryDataset(data=TEST_EXPERIMENT_NAME),
             "production_model": MemoryDataset(),
             "production_model_metrics": MemoryDataset(),
             "validation_predictions": MemoryDataset(),
@@ -90,5 +115,9 @@ def test_model_train_pipeline_creates_outputs(tmp_path) -> None:
 
     SequentialRunner().run(create_pipeline(), catalog)
 
-    assert "rmse" in catalog.load("production_model_metrics")
+    production_metrics = catalog.load("production_model_metrics")
+    assert "rmse" in production_metrics
+    assert "train_rmse" in production_metrics
+    assert "validation_rmse" in production_metrics
+    assert catalog.load("production_model").alpha == TUNED_RIDGE_ALPHA
     assert not catalog.load("validation_predictions").empty

@@ -15,6 +15,8 @@ def create_pipeline(**kwargs) -> Pipeline:
                     "y_val_data",
                     "best_columns",
                     "params:model_selection",
+                    "params:mlflow_tracking_uri",
+                    "params:mlflow_experiment_name",
                 ],
                 outputs="selected_model_metadata",
                 name="model_selection_node",
