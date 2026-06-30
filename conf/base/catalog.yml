@@ -83,6 +83,10 @@ X_batch_preprocessed:
   type: pandas.ParquetDataset
   filepath: data/05_model_input/X_batch_preprocessed.parquet
 
+X_drift_preprocessed:
+  type: pandas.ParquetDataset
+  filepath: data/05_model_input/X_drift_preprocessed.parquet
+
 # models
 
 production_model:
@@ -118,10 +122,8 @@ reporting_data_train:
   filepath: data/08_reporting/reporting_data_train.json
 
 production_model_metrics:
-  type: kedro_mlflow.io.artifacts.MlflowArtifactDataset
-  dataset:
-    type: json.JSONDataset
-    filepath: data/08_reporting/production_model_metrics.json
+  type: json.JSONDataset
+  filepath: data/08_reporting/production_model_metrics.json
 
 selected_model_metadata:
   type: json.JSONDataset
@@ -140,6 +142,10 @@ drift_report:
   filepath: data/08_reporting/drift_report.csv
   save_args:
     index: false
+
+drift_summary:
+  type: json.JSONDataset
+  filepath: data/08_reporting/drift_summary.json
 
 feature_store_upload_report:
   type: pandas.CSVDataset

@@ -15,5 +15,7 @@ RUN uv pip install --no-cache-dir -r requirements.txt --system
 
 COPY . .
 
+RUN pip install -e .
+
 EXPOSE 8000
 CMD ["uvicorn", "src.mlops_project.api.main:app", "--host", "0.0.0.0", "--port", "8000"]

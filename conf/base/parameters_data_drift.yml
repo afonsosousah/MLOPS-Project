@@ -1,2 +1,8 @@
 data_drift:
-  p_value_threshold: 0.05
+  timestamp_column: lpep_pickup_datetime
+  chunk_period: M
+  continuous_methods:
+    - jensen_shannon
+  categorical_methods:
+    - jensen_shannon
+  include_data_reconstruction: true

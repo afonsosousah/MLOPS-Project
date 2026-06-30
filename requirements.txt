@@ -6,7 +6,7 @@ kedro-datasets[pandas-csvdataset, pandas-exceldataset, pandas-parquetdataset, pl
 kedro-viz>=6.7.0
 scikit-learn~=1.5.1; python_version <= '3.10'
 scikit-learn~=1.8.0; python_version > '3.10'
-seaborn~=0.12.1
+seaborn>=0.13.2,<0.14
 ydata-profiling>=4.6.0
 great-expectations>=1.0.0
 hopsworks>=3.7.0
@@ -18,3 +18,5 @@ shap>=0.46.0
 scipy>=1.13.0
 python-dotenv>=1.0.0
 kedro-mlflow>=0.14.0
+kaleido==0.2.1
+nannyml==0.13.1

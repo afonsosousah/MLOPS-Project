@@ -1,5 +1,5 @@
 model_selection:
-  enabled: true
+  enabled: false
   metric: mae
   search:
     enabled: true

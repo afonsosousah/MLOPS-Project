@@ -71,7 +71,7 @@ def register_pipelines() -> dict[str, Pipeline]:
         base_pipelines,
         (
             "ingestion",
-            "data_cleaning",     
+            "data_cleaning",
             "feature_store",
             "split_data",
             "split_train",
@@ -89,8 +89,8 @@ def register_pipelines() -> dict[str, Pipeline]:
         base_pipelines,
         (
             "ingestion",
-            "data_cleaning",     
-            "feature_store",     
+            "data_cleaning",
+            "feature_store",
             "split_data",
             "split_train",
             "preprocessing_train",

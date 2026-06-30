@@ -1,0 +1,19 @@
+{
+  "reference_rows": 421418,
+  "current_rows": 102217,
+  "reference_start": "2024-01-01 00:03:57",
+  "reference_end": "2024-12-31 23:50:36",
+  "current_start": "2025-12-27 16:49:41",
+  "current_end": "2026-05-01 07:32:15",
+  "numeric_feature_count": 21,
+  "categorical_feature_count": 2,
+  "encoded_feature_count": 32,
+  "alert_counts_by_method": {
+    "data_reconstruction": 6,
+    "univariate": 68
+  },
+  "chunk_counts_by_method": {
+    "data_reconstruction": 6,
+    "univariate": 6
+  }
+}

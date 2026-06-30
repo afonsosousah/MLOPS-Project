@@ -157,3 +157,5 @@ class_materials
 /classes
 .ruff_cache
 .agents
+/tmp
+data/06_models/production_model.pkl
