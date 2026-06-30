@@ -1,0 +1,20 @@
+{
+  "selected_model_name": "random_forest",
+  "selected_model_type": "random_forest",
+  "feature_importance": {
+    "generated": true,
+    "method": "feature_importances_",
+    "skip_reason": null,
+    "plot_path": "data/08_reporting/feature_importance.png",
+    "table_path": "data/08_reporting/feature_importance.csv"
+  },
+  "shap": {
+    "generated": true,
+    "method": "tree_explainer",
+    "skip_reason": null,
+    "plot_path": "data/08_reporting/shap_summary.png",
+    "table_path": "data/08_reporting/shap_summary.csv",
+    "sample_size": 25,
+    "background_sample_size": 0
+  }
+}
