@@ -362,11 +362,14 @@ def model_train(  # noqa: PLR0913
                 "model_serialization_format": MLFLOW_MODEL_SERIALIZATION_FORMAT,
             }
         )
-        mlflow_sklearn.log_model(
-            model,
-            name="model",
-            serialization_format=MLFLOW_MODEL_SERIALIZATION_FORMAT,
-        )
+        try:
+            mlflow_sklearn.log_model(
+                model,
+                name="model",
+                serialization_format=MLFLOW_MODEL_SERIALIZATION_FORMAT,
+            )
+        except Exception as exc:
+            logger.warning("Could not log model artifact to MLflow: %s", exc)
 
     predictions = _validation_predictions(y_val_series, y_pred)
     explainability_metadata = _save_explainability_artifacts(

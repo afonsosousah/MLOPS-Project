@@ -230,12 +230,16 @@ def _log_best_trial_model(
     y_train: pd.Series,
 ) -> None:
     model = _fit_candidate(candidate, X_train, y_train)
-    with mlflow.start_run(run_id=run_id, nested=True):
-        mlflow_sklearn.log_model(
-            model,
-            name="best_trial_model",
-            serialization_format=MLFLOW_MODEL_SERIALIZATION_FORMAT,
-        )
+    try:
+        with mlflow.start_run(run_name="best_trial_model_artifact", nested=True):
+            mlflow.log_param("source_trial_run_id", run_id)
+            mlflow_sklearn.log_model(
+                model,
+                name="best_trial_model",
+                serialization_format=MLFLOW_MODEL_SERIALIZATION_FORMAT,
+            )
+    except Exception as exc:
+        logger.warning("Could not log best trial model artifact to MLflow: %s", exc)
 
 
 def _run_optuna_search(
