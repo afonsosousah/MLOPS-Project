@@ -38,6 +38,7 @@ DEFAULT_STEPS = (
     "ingestion",
     "data_unit_tests",
     "data_cleaning",
+    "feature_store",       
     "split_data",
     "split_train",
     "preprocessing_train",
@@ -70,6 +71,8 @@ def register_pipelines() -> dict[str, Pipeline]:
         base_pipelines,
         (
             "ingestion",
+            "data_cleaning",     
+            "feature_store",
             "split_data",
             "split_train",
             "preprocessing_train",
@@ -86,6 +89,8 @@ def register_pipelines() -> dict[str, Pipeline]:
         base_pipelines,
         (
             "ingestion",
+            "data_cleaning",     # <- adicionar
+            "feature_store",     # opcional, mas consistente com o resto
             "split_data",
             "split_train",
             "preprocessing_train",

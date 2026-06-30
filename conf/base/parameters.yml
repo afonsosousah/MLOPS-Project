@@ -3,7 +3,7 @@
 # Chronological splits
 train_test_split_date: "2025-07-01"
 train_val_split_date: "2025-01-01"
-target_column: tip_amount
+target_column: "tip_amount"
 
 # Data splits by years
 reference_years:

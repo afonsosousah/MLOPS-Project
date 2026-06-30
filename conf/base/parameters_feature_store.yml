@@ -1,8 +1,9 @@
 feature_store:
-  enabled: false
+  enabled: false              # used by the upload node (upload_features_to_store)
+  use_feature_store: false    # used by the reading node (get_features) — true to get features from Hopsworks
   feature_group_name: green_taxi_features
   feature_group_version: 1
-  description: Green Taxi engineered features (2024-2025)
+  description: "Green Taxi engineered features (2024-2025)"
   primary_key:
     - trip_id
   event_time: lpep_pickup_datetime

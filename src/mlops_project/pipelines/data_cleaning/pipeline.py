@@ -8,10 +8,8 @@ def create_pipeline(**kwargs) -> Pipeline:
         [
             node(
                 func=data_cleaning,
-                inputs=[
-                    "ingested_data",
-                ],
-                outputs=["data_clean"],
+                inputs=["ingested_data", "params:data_cleaning"],
+                outputs="data_clean",
                 name="clean_data_node",
             ),
         ]

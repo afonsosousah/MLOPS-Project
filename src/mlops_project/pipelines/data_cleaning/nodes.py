@@ -5,6 +5,9 @@ import pandas as pd
 
 logger = logging.getLogger(__name__)
 
+AIRPORT_ZONE_IDS = {1, 132, 138}
+WEEKEND_START_DAY = 5
+
 TRANSIENT_COLUMNS = ["ehail_fee", "cbd_congestion_fee"]
 DATETIME_COLUMNS = ["lpep_pickup_datetime", "lpep_dropoff_datetime"]
 REQUIRED_COLUMNS = [
@@ -18,6 +21,7 @@ REQUIRED_COLUMNS = [
     "trip_type",
 ]
 
+
 def _coerce_datetime_columns(data: pd.DataFrame) -> pd.DataFrame:
     coerced = data.copy()
     for column in DATETIME_COLUMNS:
@@ -25,12 +29,44 @@ def _coerce_datetime_columns(data: pd.DataFrame) -> pd.DataFrame:
     return coerced
 
 
+def _engineer_features(data: pd.DataFrame) -> pd.DataFrame:
+    """Derive trip-level features from cleaned raw columns."""
+    transformed = data.copy()
+    pickup = pd.to_datetime(transformed["lpep_pickup_datetime"])
+    dropoff = pd.to_datetime(transformed["lpep_dropoff_datetime"])
+
+    transformed["trip_duration_min"] = (dropoff - pickup).dt.total_seconds() / 60
+    transformed["pickup_hour"] = pickup.dt.hour
+    transformed["pickup_dayofweek"] = pickup.dt.dayofweek
+    transformed["pickup_month"] = pickup.dt.month
+    transformed["is_weekend"] = (
+        transformed["pickup_dayofweek"] >= WEEKEND_START_DAY
+    ).astype(int)
+    transformed["is_rush_hour"] = (
+        (transformed["is_weekend"] == 0)
+        & (
+            transformed["pickup_hour"].isin(range(7, 10))
+            | transformed["pickup_hour"].isin(range(17, 20))
+        )
+    ).astype(int)
+    transformed["is_night"] = (
+        transformed["pickup_hour"].isin([22, 23, 0, 1, 2, 3, 4, 5]).astype(int)
+    )
+    transformed["is_airport"] = (
+        transformed["PULocationID"].isin(AIRPORT_ZONE_IDS)
+        | transformed["DOLocationID"].isin(AIRPORT_ZONE_IDS)
+    ).astype(int)
+
+    transformed = transformed.reset_index(drop=True)
+    transformed["trip_id"] = transformed.index
+    return transformed
+
 
 def data_cleaning(
     ingested_data: pd.DataFrame,
     parameters: dict[str, Any],
 ) -> pd.DataFrame:
-    """Apply deterministic row filters before chronological splitting."""
+    """Apply deterministic row filters, then engineer features."""
     rows_before = len(ingested_data)
     data = ingested_data.copy()
 
@@ -76,9 +112,13 @@ def data_cleaning(
     data = data.drop_duplicates().reset_index(drop=True)
 
     logger.info(
-        "Filtered ingested data before split: %d -> %d rows retained (%.2f%%).",
+        "Filtered ingested data: %d -> %d rows retained (%.2f%%).",
         rows_before,
         len(data),
         len(data) / rows_before * 100 if rows_before else 0,
     )
+
+    data = _engineer_features(data)
+    logger.info("Feature engineering completed: %d columns total.", len(data.columns))
+
     return data

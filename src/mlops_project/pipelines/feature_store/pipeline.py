@@ -8,7 +8,7 @@ def create_pipeline(**kwargs) -> Pipeline:
         [
             node(
                 func=upload_features_to_store,
-                inputs=["X_train_preprocessed", "params:feature_store"],
+                inputs=["data_clean", "params:feature_store"],
                 outputs="feature_store_upload_report",
                 name="upload_features_to_store_node",
             )
