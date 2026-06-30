@@ -2,7 +2,6 @@
 
 import pickle
 from pathlib import Path
-from typing import Optional
 
 import pandas as pd
 from fastapi import FastAPI, HTTPException
@@ -25,7 +24,7 @@ _columns: list[str] = []
 
 @app.on_event("startup")
 def load_model() -> None:
-    global _model, _transformer, _columns
+    global _model, _transformer, _columns  # noqa: PLW0603
     if MODEL_PATH.exists():
         with open(MODEL_PATH, "rb") as f:
             _model = pickle.load(f)
@@ -44,27 +43,29 @@ class TripFeatures(BaseModel):
     Provide engineered features (trip_duration_min, pickup_hour, etc.) if available.
     """
 
-    RatecodeID: Optional[float] = None
-    PULocationID: Optional[int] = None
-    DOLocationID: Optional[int] = None
-    passenger_count: Optional[float] = None
-    trip_distance: Optional[float] = None
-    fare_amount: Optional[float] = None
-    extra: Optional[float] = None
-    mta_tax: Optional[float] = None
-    tolls_amount: Optional[float] = None
-    improvement_surcharge: Optional[float] = None
-    congestion_surcharge: Optional[float] = None
-    trip_type: Optional[float] = None
-    trip_duration_min: Optional[float] = None
-    pickup_hour: Optional[int] = None
-    pickup_dayofweek: Optional[int] = None
-    pickup_month: Optional[int] = None
-    is_weekend: Optional[int] = None
-    is_rush_hour: Optional[int] = None
-    is_night: Optional[int] = None
-    is_airport: Optional[int] = None
-    source_year: Optional[int] = None
+    RatecodeID: float | None = None
+    PULocationID: int | None = None
+    DOLocationID: int | None = None
+    PU_borough: str | None = None
+    DO_borough: str | None = None
+    passenger_count: float | None = None
+    trip_distance: float | None = None
+    fare_amount: float | None = None
+    extra: float | None = None
+    mta_tax: float | None = None
+    tolls_amount: float | None = None
+    improvement_surcharge: float | None = None
+    congestion_surcharge: float | None = None
+    trip_type: float | None = None
+    trip_duration_min: float | None = None
+    pickup_hour: int | None = None
+    pickup_dayofweek: int | None = None
+    pickup_month: int | None = None
+    is_weekend: int | None = None
+    is_rush_hour: int | None = None
+    is_night: int | None = None
+    is_airport: int | None = None
+    source_year: int | None = None
 
 
 class PredictionResponse(BaseModel):

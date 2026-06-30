@@ -152,7 +152,7 @@ Example prediction request:
 Invoke-RestMethod -Method Post `
   -Uri "http://localhost:8000/predict" `
   -ContentType "application/json" `
-  -Body '{"PULocationID":74,"DOLocationID":42,"passenger_count":1,"trip_distance":2.1,"fare_amount":12.0,"pickup_hour":18,"pickup_dayofweek":4,"pickup_month":1,"source_year":2026}'
+  -Body '{"PULocationID":74,"DOLocationID":42,"PU_borough":"Manhattan","DO_borough":"Brooklyn","passenger_count":1,"trip_distance":2.1,"fare_amount":12.0,"pickup_hour":18,"pickup_dayofweek":4,"pickup_month":1,"source_year":2026}'
 ```
 
 ## Verification
